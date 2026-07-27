@@ -2,7 +2,7 @@
 
 client_id = "b39261e3c08f4b99f716e1ea1c0a90cf"
 name = "petution-sync"
-application_url = "https://example.com"
+application_url = "https://petution-workspace.onrender.com"
 embedded = true
 
 [access_scopes]
@@ -53,8 +53,11 @@ api_version = "2026-10"
   topics = [ "orders/create" ]
 
 [auth]
-redirect_urls = [ "https://example.com/api/auth" ]
+redirect_urls = [
+  "https://petution-workspace.onrender.com/auth/callback",
+  "https://petution-workspace.onrender.com/auth/shopify/callback",
+  "https://petution-workspace.onrender.com/api/auth/callback"
+]
 
 [build]
-include_config_on_deploy = true
 automatically_update_urls_on_dev = true
