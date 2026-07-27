@@ -376,7 +376,7 @@ export const AppProvider = ({ children }) => {
   });
 
   // Modal & View States
-  const [activeTab, setActiveTab] = useState('dashboard');
+  const [activeTab, setActiveTab] = useState('reminders');
   const [activeDrawer, setActiveDrawer] = useState(null);
   const [activeModalItem, setActiveModalItem] = useState(null);
   const [showWorkspaceMenu, setShowWorkspaceMenu] = useState(false);
