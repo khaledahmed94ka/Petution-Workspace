@@ -1,6 +1,5 @@
 import { authenticate } from "../shopify.server";
-import { getFirestore } from "firebase-admin/firestore";
-import "../utils/firebase.server";
+import { db } from "../utils/firebase.server";
 
 export const action = async ({ request }) => {
   const { payload, session, topic, shop } = await authenticate.webhook(request);
@@ -8,7 +7,6 @@ export const action = async ({ request }) => {
   console.log(`Received ${topic} webhook for ${shop}`);
 
   try {
-    const db = getFirestore();
     // Use the product ID as the document ID in Firebase
     const docRef = db.collection("products").doc(String(payload.id));
 
