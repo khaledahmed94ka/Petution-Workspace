@@ -24,9 +24,10 @@ Petution-Workspace/
 
 ---
 
-## 2. Authentication Architecture
+## 2. Authentication & Telemetry Architecture
+- **Sentry Error Tracking**: Integrated in `src/services/sentry.jsx` (`@sentry/react`). Captures unhandled React crashes, uncaught exceptions, and telemetry logs. Configurable via `VITE_SENTRY_DSN`. Wrapped around the application in `<PetutionErrorBoundary>`.
 - **Google Identity Services SDK**: Loaded via `https://accounts.google.com/gsi/client`. Parses Google JWT ID Tokens (`credential` payload containing `email`, `name`, `picture`, `sub`).
-- **Firebase Auth Engine**: Configured in `src/services/firebaseAuth.js` with `realGoogleSignInWithPopup`, `realEmailSignIn`, `realEmailSignUp`, `realSendPasswordReset`, and `realSignOut`.
+- **Firebase Auth Web SDK Engine**: Configured in `src/services/firebaseAuth.js` supporting `realGoogleSignInWithPopup`, `realEmailSignIn`, `realEmailSignUp`, `realSendPasswordReset`, and `realSignOut`.
 - **Social Auth Dialog**: `SocialAuthModal` component provides an account chooser modal matching `accounts.google.com` and `appleid.apple.com`.
 - **Password Reset**: `ForgotPasswordModal` component handles email reset link dispatch.
 

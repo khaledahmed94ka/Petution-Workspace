@@ -2,6 +2,7 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 import { apiClient } from '../services/apiClient';
 import { realGoogleSignInWithPopup, realEmailSignIn, realEmailSignUp, realSendPasswordReset, realSignOut } from '../services/firebaseAuth';
 import { syncToFirestore, deleteFromFirestore, fetchUserData, bulkWriteToFirestore } from '../services/firestoreDb';
+import { captureException } from '../services/sentry.jsx';
 
 const syncToShopify = async (type, action, data) => {
   try {
