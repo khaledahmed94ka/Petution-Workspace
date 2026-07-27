@@ -8,7 +8,7 @@ import * as Sentry from '@sentry/react';
 
 // Sentry DSN configuration (Configurable via import.meta.env or window.PETUTION_SENTRY_DSN)
 export const SENTRY_DSN = import.meta.env?.VITE_SENTRY_DSN || 
-  "https://99812034912a4b876543210987654321@o4500000000000000.ingest.sentry.io/4500000000000000";
+  "https://6bd09a5c381a1db4916f91368b63ad44@o4511809914404864.ingest.de.sentry.io/4511809919123536";
 
 /**
  * Initialize Sentry for React App
