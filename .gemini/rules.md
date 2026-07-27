@@ -24,7 +24,11 @@ Petution-Workspace/
 
 ---
 
-## 2. Authentication & Telemetry Architecture
+## 2. Security, Rate Limiting & Telemetry
+- **API Rate Limiting**: Built in `server/middleware/rateLimiter.js` (`express-rate-limit`).
+  - **Global API Limiter**: Max 100 requests per 15 minutes window per IP across `/api/v1/*`.
+  - **Auth Limiter**: Strict 5 attempts per 15 minutes window per IP on login/signup to prevent brute-force attacks.
+  - **Webhook Limiter**: 200 requests per 5 minutes for high-burst Shopify e-commerce webhooks.
 - **Sentry Error Tracking**: Integrated in `src/services/sentry.jsx` (`@sentry/react`). Captures unhandled React crashes, uncaught exceptions, and telemetry logs. Configurable via `VITE_SENTRY_DSN`. Wrapped around the application in `<PetutionErrorBoundary>`.
 - **Google Identity Services SDK**: Loaded via `https://accounts.google.com/gsi/client`. Parses Google JWT ID Tokens (`credential` payload containing `email`, `name`, `picture`, `sub`).
 - **Firebase Auth Web SDK Engine**: Configured in `src/services/firebaseAuth.js` supporting `realGoogleSignInWithPopup`, `realEmailSignIn`, `realEmailSignUp`, `realSendPasswordReset`, and `realSignOut`.

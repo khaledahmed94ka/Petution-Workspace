@@ -42,8 +42,10 @@ let soapNotes = [
   { id: 'soap-1', visitId: 'visit-1', petId: 'pet-1', vetName: 'Dr. Khaled ElGendy', date: '2026-07-26', subjective: 'Routine annual checkup', tempC: 38.5, weightKg: 4.2, heartRateBpm: 120, respiratoryRateBpm: 24, assessment: 'Healthy adult feline', plan: 'Continue annual booster schedule', rxMedications: [] }
 ];
 
+import { authLimiter } from '../middleware/rateLimiter.js';
+
 // --- AUTHENTICATION ENDPOINTS ---
-apiRouter.post('/auth/login', (req, res) => {
+apiRouter.post('/auth/login', authLimiter, (req, res) => {
   const { email, password } = req.body;
   const token = `mock-jwt-token-${Date.now()}`;
   res.status(200).json({

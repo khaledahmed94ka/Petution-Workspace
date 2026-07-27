@@ -10,6 +10,8 @@ import { fileURLToPath } from 'url';
 import { apiRouter } from './routes/api.js';
 import { shopifyRouter } from './routes/shopify.js';
 
+import { globalApiLimiter, webhookLimiter } from './middleware/rateLimiter.js';
+
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
@@ -20,9 +22,9 @@ const PORT = process.env.PORT || 3001;
 app.use(cors());
 app.use(express.json({ limit: '10mb' }));
 
-// API & Webhook Routes
-app.use('/api/v1', apiRouter);
-app.use('/api/webhooks/shopify', shopifyRouter);
+// API & Webhook Routes with Rate Limiting Protection
+app.use('/api/v1', globalApiLimiter, apiRouter);
+app.use('/api/webhooks/shopify', webhookLimiter, shopifyRouter);
 
 // Serve static compiled frontend assets in production
 const distPath = path.join(__dirname, '../dist');
