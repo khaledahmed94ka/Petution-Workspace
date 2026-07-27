@@ -376,7 +376,14 @@ export const AppProvider = ({ children }) => {
   });
 
   // Modal & View States
-  const [activeTab, setActiveTab] = useState('reminders');
+  const [activeTab, setActiveTab] = useState(() => {
+    try {
+      const url = new URL(window.location.href);
+      return url.searchParams.get('tab') || 'reminders';
+    } catch {
+      return 'reminders';
+    }
+  });
   const [activeDrawer, setActiveDrawer] = useState(null);
   const [activeModalItem, setActiveModalItem] = useState(null);
   const [showWorkspaceMenu, setShowWorkspaceMenu] = useState(false);
