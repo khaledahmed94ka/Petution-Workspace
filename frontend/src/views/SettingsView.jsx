@@ -218,6 +218,38 @@ export const SettingsView = () => {
             </div>
           </div>
         </div>
+      ) : activeTab === 'Integrations' ? (
+        <div className="card settings-card">
+          <div className="card-header-section">
+            <h4 className="font-semibold flex items-center gap-xs">
+              <Database size={20} className="text-teal" /> Integrations
+            </h4>
+            <p className="text-xs text-muted">Connect Petution to external services and platforms.</p>
+          </div>
+
+          <div className="margin-top-md">
+            <div className="card info-card">
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <div>
+                  <h5 className="font-semibold">Shopify App Integration</h5>
+                  <p className="text-xs text-muted margin-top-xs">
+                    Sync your Shopify store data (customers, products, orders) to Petution in real-time and access your Dashboard directly inside Shopify.
+                  </p>
+                </div>
+                <span className="badge badge-success" style={{ background: '#dcfce7', color: '#166534', padding: '4px 8px', borderRadius: '4px', fontSize: '12px', fontWeight: '500' }}>Configured</span>
+              </div>
+              <div className="margin-top-md" style={{ padding: '16px', background: 'var(--surface-bg)', borderRadius: '8px', border: '1px solid var(--border-card)' }}>
+                <h6 className="font-semibold margin-bottom-sm text-primary">How it works:</h6>
+                <ol className="text-sm text-muted" style={{ paddingLeft: '20px', display: 'flex', flexDirection: 'column', gap: '8px', listStyleType: 'decimal' }}>
+                  <li>Your custom Shopify app <strong>Petution Reminder</strong> is already installed on your store.</li>
+                  <li>It runs silently in the background, listening to real-time Webhooks from Shopify.</li>
+                  <li>When a new Customer, Order, or Product is created in Shopify, the App instantly pushes that data into your Petution database.</li>
+                  <li>You can use the Petution Reminders and Dashboard natively inside your Shopify Admin by clicking on the app in your Shopify sidebar.</li>
+                </ol>
+              </div>
+            </div>
+          </div>
+        </div>
       ) : (
         <div className="card empty-state">
           {activeTab} configuration panel ready for customization.
