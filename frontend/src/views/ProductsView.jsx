@@ -21,7 +21,6 @@ export const ProductsView = () => {
       UnitType: p.unitType,
       PricingUnit: p.pricingUnit,
       Quantity: p.quantity,
-      Quantity: p.quantity,
       PricePerUnit: p.pricePerUnit,
       CostPerUnit: p.costPerUnit,
       ReminderDays: p.reminderDays,
