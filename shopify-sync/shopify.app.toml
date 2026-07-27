@@ -1,7 +1,7 @@
 # Learn more about configuring your app at https://shopify.dev/docs/apps/tools/cli/configuration
 
 client_id = "b39261e3c08f4b99f716e1ea1c0a90cf"
-name = "petution-sync"
+name = "Petution Reminder"
 application_url = "https://petution-workspace.onrender.com"
 embedded = true
 
