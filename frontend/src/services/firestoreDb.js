@@ -44,7 +44,8 @@ export const fetchUserData = async (userId) => {
   
   // Settings and notifications
   const settingsList = await fetchCollection(userId, 'settings');
-  data.settings = settingsList.length > 0 ? settingsList[0] : null;
+  const globalSettings = settingsList.find(s => s.id === 'global');
+  data.settings = globalSettings || (settingsList.length > 0 ? settingsList[0] : null);
   data.notifications = await fetchCollection(userId, 'notifications');
   
   return data;

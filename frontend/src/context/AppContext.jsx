@@ -360,9 +360,7 @@ export const AppProvider = ({ children }) => {
   const [settings, setSettingsState] = useState(() => {
     const saved = localStorage.getItem('petution_settings');
     if (saved) {
-      const parsed = JSON.parse(saved);
-      if (parsed.orgName === 'Petfast') parsed.orgName = 'Petution';
-      return parsed;
+      return JSON.parse(saved);
     }
     return initialSettings;
   });
