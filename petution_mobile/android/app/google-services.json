@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "659925968161",
+    "project_id": "petution-app",
+    "storage_bucket": "petution-app.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:659925968161:android:057e884f85737538d8ca60",
+        "android_client_info": {
+          "package_name": "com.example.petution_mobile"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "659925968161-vasjcom5mva2nmt86sup2jk0umn3jidr.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDXX6H6v0lorEtK94YcT0ru8_kZpXbtWG4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "659925968161-vasjcom5mva2nmt86sup2jk0umn3jidr.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

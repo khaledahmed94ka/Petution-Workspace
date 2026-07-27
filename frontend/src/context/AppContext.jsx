@@ -3,6 +3,20 @@ import { apiClient } from '../services/apiClient';
 import { realGoogleSignInWithPopup, realEmailSignIn, realEmailSignUp, realSendPasswordReset, realSignOut } from '../services/firebaseAuth';
 import { syncToFirestore, deleteFromFirestore, fetchUserData, bulkWriteToFirestore } from '../services/firestoreDb';
 
+const syncToShopify = async (type, action, data) => {
+  try {
+    const shop = localStorage.getItem('petution_shopify_shop') || 'petution.myshopify.com';
+    await fetch('https://petution-workspace.onrender.com/api/sync', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ shop, type, action, data })
+    });
+    console.log(`Successfully synced ${type} to Shopify`);
+  } catch (e) {
+    console.error('Error syncing to Shopify:', e);
+  }
+};
+
 const AppContext = createContext();
 
 const initialClients = [
@@ -482,6 +496,12 @@ export const AppProvider = ({ children }) => {
     };
     setClients(prev => [newClient, ...prev]);
     syncToFirestore(user?.id, 'clients', newClient.id, newClient);
+    syncToShopify('customer', 'create', {
+      firstName: newClient.name.split(' ')[0],
+      lastName: newClient.name.split(' ').slice(1).join(' '),
+      email: newClient.email || '',
+      phone: newClient.phones?.[0]?.phone || ''
+    });
   };
 
   const addPet = (petData) => {
@@ -526,6 +546,10 @@ export const AppProvider = ({ children }) => {
       { id: `log-${Date.now()}`, itemName: prodData.name, change: `+${prodData.quantity || 1} units (Created)`, user: 'Khaled ElGendy', date: new Date().toISOString().split('T')[0] },
       ...prev
     ]);
+    syncToShopify('product', 'create', {
+      title: newProd.name,
+      description: newProd.notes || ''
+    });
   };
 
   const updateProduct = (id, updatedData) => {
