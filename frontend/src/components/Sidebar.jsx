@@ -39,15 +39,15 @@ export const Sidebar = ({ activeTab, setActiveTab, onRegisterClick, isMobileOpen
   };
 
   const mainNav = [
-    { id: 'reminders', label: 'Reminders', icon: Bell },
-    { id: 'analytics', label: 'Analytics', icon: BarChart3 },
-    { id: 'products', label: 'Products & Services', icon: Package },
     { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
     { id: 'clients', label: 'Clients', icon: Users },
     { id: 'pets', label: 'Pets', icon: Dog },
     { id: 'visits', label: 'Visits', icon: Calendar },
     { id: 'invoices', label: 'Invoices', icon: Receipt },
     { id: 'expenses', label: 'Expenses', icon: DollarSign },
+    { id: 'reminders', label: 'Reminders', icon: Bell },
+    { id: 'products', label: 'Products & Services', icon: Package },
+    { id: 'analytics', label: 'Analytics', icon: BarChart3 },
     { id: 'chats', label: 'Chats', icon: MessageSquare }
   ];
 
