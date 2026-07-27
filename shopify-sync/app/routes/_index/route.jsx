@@ -18,9 +18,9 @@ export default function App() {
   return (
     <div className={styles.index}>
       <div className={styles.content}>
-        <h1 className={styles.heading}>A short heading about [your app]</h1>
+        <h1 className={styles.heading}>Petution Sync</h1>
         <p className={styles.text}>
-          A tagline about [your app] that describes your value proposition.
+          This app synchronizes your Shopify store data to your Petution Firebase database in real-time.
         </p>
         {showForm && (
           <Form className={styles.form} method="post" action="/auth/login">
@@ -36,16 +36,13 @@ export default function App() {
         )}
         <ul className={styles.list}>
           <li>
-            <strong>Product feature</strong>. Some detail about your feature and
-            its benefit to your customer.
+            <strong>Customers</strong>. Automatically syncs new customers.
           </li>
           <li>
-            <strong>Product feature</strong>. Some detail about your feature and
-            its benefit to your customer.
+            <strong>Orders</strong>. Automatically syncs new orders.
           </li>
           <li>
-            <strong>Product feature</strong>. Some detail about your feature and
-            its benefit to your customer.
+            <strong>Products</strong>. Keeps your product catalog up to date in Firebase.
           </li>
         </ul>
       </div>

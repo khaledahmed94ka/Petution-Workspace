@@ -52,6 +52,14 @@ api_version = "2026-10"
   uri = "/webhooks/orders/create"
   topics = [ "orders/create" ]
 
+  [[webhooks.subscriptions]]
+  uri = "/webhooks/products/create"
+  topics = [ "products/create" ]
+
+  [[webhooks.subscriptions]]
+  uri = "/webhooks/products/update"
+  topics = [ "products/update" ]
+
 [auth]
 redirect_urls = [
   "https://petution-workspace.onrender.com/auth/callback",
