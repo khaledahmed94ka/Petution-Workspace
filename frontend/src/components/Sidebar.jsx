@@ -73,7 +73,6 @@ export const Sidebar = ({ activeTab, setActiveTab, onRegisterClick, isMobileOpen
           </div>
           <div className="workspace-title-info">
             <span className="workspace-name">{settings.orgName || 'Petution Clinic'}</span>
-            <span className="workspace-slug">{settings.slug || 'petution'}</span>
           </div>
           <ChevronDown size={14} className="margin-left-auto text-muted" />
         </div>
