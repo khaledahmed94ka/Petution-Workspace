@@ -35,7 +35,7 @@ import { X, LogOut, ShieldCheck } from 'lucide-react';
 const MainApp = () => {
   const [isRegistering, setIsRegistering] = useState(false);
   const [isMobileOpen, setIsMobileOpen] = useState(false);
-  const { user, logout, activeTab, setActiveTab, activeDrawer, setActiveDrawer, activeModalItem } = useApp();
+  const { user, logout, activeTab, setActiveTab, activeDrawer, setActiveDrawer, activeModalItem, isEmbedded } = useApp();
 
   if (!user?.isAuthenticated) {
     return <LoginView />;
@@ -66,15 +66,17 @@ const MainApp = () => {
   };
 
   return (
-    <div className="app-container">
-      <Sidebar 
-        activeTab={activeTab} 
-        setActiveTab={setActiveTab} 
-        onRegisterClick={() => setIsRegistering(true)}
-        isMobileOpen={isMobileOpen}
-        onCloseMobile={() => setIsMobileOpen(false)}
-      />
-      <div className="main-content">
+    <div className={`app-container ${isEmbedded ? 'embedded-mode' : ''}`}>
+      {!isEmbedded && (
+        <Sidebar 
+          activeTab={activeTab} 
+          setActiveTab={setActiveTab} 
+          onRegisterClick={() => setIsRegistering(true)}
+          isMobileOpen={isMobileOpen}
+          onCloseMobile={() => setIsMobileOpen(false)}
+        />
+      )}
+      <div className="main-content" style={isEmbedded ? { marginLeft: 0, width: '100%' } : {}}>
         <Header onMenuToggle={() => setIsMobileOpen(prev => !prev)} />
         <div className="page-wrapper">
           {renderView()}

@@ -384,6 +384,14 @@ export const AppProvider = ({ children }) => {
       return 'reminders';
     }
   });
+  const [isEmbedded, setIsEmbedded] = useState(() => {
+    try {
+      const url = new URL(window.location.href);
+      return url.searchParams.get('embedded') === 'true';
+    } catch {
+      return false;
+    }
+  });
   const [activeDrawer, setActiveDrawer] = useState(null);
   const [activeModalItem, setActiveModalItem] = useState(null);
   const [showWorkspaceMenu, setShowWorkspaceMenu] = useState(false);
@@ -1019,7 +1027,8 @@ export const AppProvider = ({ children }) => {
         showWorkspaceMenu,
         setShowWorkspaceMenu,
         showNotifications,
-        setShowNotifications
+        setShowNotifications,
+        isEmbedded
       }}
     >
       {children}
