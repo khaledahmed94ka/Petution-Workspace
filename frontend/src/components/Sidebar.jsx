@@ -12,6 +12,7 @@ import {
   CreditCard, 
   Settings, 
   HelpCircle,
+  Bell,
   ChevronDown,
   Check,
   PlusCircle,
@@ -44,6 +45,7 @@ export const Sidebar = ({ activeTab, setActiveTab, onRegisterClick, isMobileOpen
     { id: 'visits', label: 'Visits', icon: Calendar },
     { id: 'invoices', label: 'Invoices', icon: Receipt },
     { id: 'expenses', label: 'Expenses', icon: DollarSign },
+    { id: 'reminders', label: 'Reminders', icon: Bell },
     { id: 'products', label: 'Products & Services', icon: Package },
     { id: 'analytics', label: 'Analytics', icon: BarChart3 },
     { id: 'chats', label: 'Chats', icon: MessageSquare }

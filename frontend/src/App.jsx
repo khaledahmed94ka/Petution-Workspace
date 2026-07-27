@@ -13,6 +13,7 @@ import { InvoicesView } from './views/InvoicesView';
 import { ExpensesView } from './views/ExpensesView';
 import { ProductsView } from './views/ProductsView';
 import { AnalyticsView } from './views/AnalyticsView';
+import { RemindersView } from './views/RemindersView';
 import { TeamView } from './views/TeamView';
 import { BillingView } from './views/BillingView'; // Deferred for later
 import { SettingsView } from './views/SettingsView';
@@ -54,6 +55,7 @@ const MainApp = () => {
       case 'expenses': return <ExpensesView />;
       case 'products': return <ProductsView />;
       case 'analytics': return <AnalyticsView />;
+      case 'reminders': return <RemindersView />;
       case 'chats': return <div className="page-wrapper"><div className="card"><h3>WhatsApp Messaging Hub</h3><p className="text-muted margin-top-xs">Integrated clinic chat system ready for WhatsApp API configuration.</p></div></div>;
       case 'team': return <TeamView />;
       case 'billing': return <div className="page-wrapper"><div className="card"><h3>Billing & Subscription</h3><p className="text-muted margin-top-xs">Subscription and billing management coming soon.</p></div></div>;

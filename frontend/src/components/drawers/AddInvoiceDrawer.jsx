@@ -3,7 +3,7 @@ import { X, Plus } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 
 export const AddInvoiceDrawer = () => {
-  const { setActiveDrawer, addInvoice, pets, products } = useApp();
+  const { setActiveDrawer, addInvoice, pets, products, addReminder } = useApp();
 
   const [selectedPet, setSelectedPet] = useState(pets[0]?.id || '');
   const [invoiceState, setInvoiceState] = useState('pending');
@@ -52,6 +52,23 @@ export const AddInvoiceDrawer = () => {
       subtotal,
       totalAmount
     });
+    
+    // Automatically generate a Reminder if the product requires one
+    const prod = products.find(p => p.id === selectedProduct);
+    if (prod && prod.reminderDays) {
+      const pet = pets.find(p => p.id === selectedPet);
+      const dueDate = new Date();
+      dueDate.setDate(dueDate.getDate() + Number(prod.reminderDays));
+      
+      addReminder({
+        clientId: pet?.owners?.[0] || 'unknown',
+        petId: selectedPet,
+        productId: selectedProduct,
+        productName: prod.name,
+        dueDate: dueDate.toISOString().split('T')[0]
+      });
+    }
+    
     setActiveDrawer(null);
   };
 

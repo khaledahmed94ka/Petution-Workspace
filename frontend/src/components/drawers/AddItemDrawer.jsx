@@ -15,6 +15,7 @@ export const AddItemDrawer = () => {
   const [costPerUnit, setCostPerUnit] = useState(activeModalItem?.costPerUnit ?? 50);
   const [quantity, setQuantity] = useState(activeModalItem?.quantity ?? 10);
   const [alertThreshold, setAlertThreshold] = useState(activeModalItem?.alertThreshold ?? 5);
+  const [reminderDays, setReminderDays] = useState(activeModalItem?.reminderDays || '');
   const [notes, setNotes] = useState(activeModalItem?.notes || '');
 
   useEffect(() => {
@@ -27,6 +28,7 @@ export const AddItemDrawer = () => {
       setCostPerUnit(activeModalItem.costPerUnit ?? 50);
       setQuantity(activeModalItem.quantity ?? 10);
       setAlertThreshold(activeModalItem.alertThreshold ?? 5);
+      setReminderDays(activeModalItem.reminderDays || '');
       setNotes(activeModalItem.notes || '');
     }
   }, [activeModalItem]);
@@ -49,6 +51,7 @@ export const AddItemDrawer = () => {
       costPerUnit: Number(costPerUnit),
       quantity: Number(quantity),
       alertThreshold: Number(alertThreshold),
+      reminderDays: reminderDays ? Number(reminderDays) : null,
       notes
     };
 
@@ -174,6 +177,18 @@ export const AddItemDrawer = () => {
               </div>
             </div>
           )}
+
+          <div className="form-group">
+            <label>Reminder Duration (Days)</label>
+            <input 
+              type="number" 
+              className="form-control"
+              placeholder="e.g. 30 (for food) or 365 (for annual vaccine)"
+              value={reminderDays}
+              onChange={(e) => setReminderDays(e.target.value)}
+            />
+            <small className="text-muted text-xs">Leave blank if no reminder is needed.</small>
+          </div>
 
           <div className="form-group">
             <label>Notes (Optional)</label>

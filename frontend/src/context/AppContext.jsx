@@ -229,6 +229,10 @@ const initialInvoices = [
   }
 ];
 
+const initialReminders = [
+  { id: 'rem-1', clientId: 'cli-1', petId: 'pet-1', productId: 'prod-1', productName: 'Feline Rabies Vaccine', dueDate: '2027-06-15', status: 'pending', createdAt: '2026-06-15' }
+];
+
 const initialTeam = [
   {
     id: 'usr-1',
@@ -290,6 +294,7 @@ export const AppProvider = ({ children }) => {
           if (cloudData.invitations?.length) setInvitations(cloudData.invitations);
           if (cloudData.settings) setSettingsState(cloudData.settings);
           if (cloudData.notifications?.length) setNotifications(cloudData.notifications);
+          if (cloudData.reminders?.length) setReminders(cloudData.reminders);
         }
         setDataLoaded(true);
       }
@@ -345,6 +350,11 @@ export const AppProvider = ({ children }) => {
   const [team, setTeam] = useState(() => {
     const saved = localStorage.getItem('petution_team');
     return saved ? JSON.parse(saved) : initialTeam;
+  });
+
+  const [reminders, setReminders] = useState(() => {
+    const saved = localStorage.getItem('petution_reminders');
+    return saved ? JSON.parse(saved) : initialReminders;
   });
 
   const [settings, setSettingsState] = useState(() => {
@@ -423,6 +433,10 @@ export const AppProvider = ({ children }) => {
   useEffect(() => {
     localStorage.setItem('petution_notifications', JSON.stringify(notifications));
   }, [notifications]);
+
+  useEffect(() => {
+    localStorage.setItem('petution_reminders', JSON.stringify(reminders));
+  }, [reminders]);
 
   const updateSettings = (newSettings) => {
     setSettingsState(newSettings);
@@ -610,6 +624,26 @@ export const AppProvider = ({ children }) => {
   const deleteVaccine = (id) => {
     setVaccines(prev => prev.filter(v => v.id !== id));
     deleteFromFirestore(user?.id, 'vaccines', id);
+  };
+
+  const addReminder = (remData) => {
+    const newRem = {
+      ...remData,
+      id: `rem-${Date.now()}`,
+      status: 'pending',
+      createdAt: new Date().toISOString().split('T')[0]
+    };
+    setReminders(prev => [newRem, ...prev]);
+    syncToFirestore(user?.id, 'reminders', newRem.id, newRem);
+  };
+
+  const updateReminderStatus = (id, newStatus) => {
+    setReminders(prev => {
+      const updated = prev.map(r => r.id === id ? { ...r, status: newStatus } : r);
+      const rem = updated.find(r => r.id === id);
+      if (rem) syncToFirestore(user?.id, 'reminders', rem.id, rem);
+      return updated;
+    });
   };
 
   const saveSOAPNote = (soapData) => {
@@ -952,6 +986,9 @@ export const AppProvider = ({ children }) => {
         vaccines,
         addVaccine,
         deleteVaccine,
+        reminders,
+        addReminder,
+        updateReminderStatus,
         soapNotes,
         saveSOAPNote,
         migrateLocalStorageToCloud,

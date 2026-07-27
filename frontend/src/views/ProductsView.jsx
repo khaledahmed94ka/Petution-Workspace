@@ -21,8 +21,10 @@ export const ProductsView = () => {
       UnitType: p.unitType,
       PricingUnit: p.pricingUnit,
       Quantity: p.quantity,
+      Quantity: p.quantity,
       PricePerUnit: p.pricePerUnit,
       CostPerUnit: p.costPerUnit,
+      ReminderDays: p.reminderDays,
       AlertThreshold: p.alertThreshold
     }));
     exportToCSV(exportData, 'petution_products_export.csv');
@@ -147,6 +149,7 @@ export const ProductsView = () => {
                 <th>Price per Session</th>
                 <th>Cost per Session</th>
                 <th>Revenue per Session</th>
+                <th>Reminder Days</th>
                 <th>Notes</th>
                 <th>Actions</th>
               </tr>
@@ -167,6 +170,7 @@ export const ProductsView = () => {
                     <td className="font-bold">{srv.pricePerUnit} EGP</td>
                     <td>{srv.costPerUnit} EGP</td>
                     <td>{srv.revenuePerUnit} EGP</td>
+                    <td>{srv.reminderDays ? `${srv.reminderDays} days` : '—'}</td>
                     <td className="text-muted">{srv.notes || '—'}</td>
                     <td>
                       <button className="btn-secondary text-xs" onClick={() => handleEditItem(srv)}>
@@ -190,6 +194,7 @@ export const ProductsView = () => {
                 <th>Price per Unit</th>
                 <th>Cost per Unit</th>
                 <th>Revenue per Unit</th>
+                <th>Reminder Days</th>
                 <th>Alert Threshold</th>
                 <th>Actions</th>
               </tr>
@@ -215,6 +220,7 @@ export const ProductsView = () => {
                     <td>{prod.pricePerUnit} EGP</td>
                     <td>{prod.costPerUnit} EGP</td>
                     <td>{prod.revenuePerUnit} EGP</td>
+                    <td>{prod.reminderDays ? `${prod.reminderDays} days` : '—'}</td>
                     <td>{prod.alertThreshold}</td>
                     <td>
                       <button className="btn-secondary text-xs" onClick={() => handleEditItem(prod)}>
