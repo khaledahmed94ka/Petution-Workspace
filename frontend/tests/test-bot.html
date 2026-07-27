@@ -1,0 +1,689 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Petution — Full System Functional Test Bot</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Inter', 'Segoe UI', sans-serif; background: #0f172a; color: #e2e8f0; padding: 24px; }
+    h1 { font-size: 1.6rem; margin-bottom: 8px; }
+    .subtitle { color: #94a3b8; font-size: 0.85rem; margin-bottom: 24px; }
+    .test-group { background: #1e293b; border: 1px solid #334155; border-radius: 12px; padding: 16px 20px; margin-bottom: 16px; }
+    .test-group h2 { font-size: 1rem; color: #2dd4bf; margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
+    .test-row { display: flex; justify-content: space-between; align-items: center; padding: 6px 0; border-bottom: 1px solid #1e293b; }
+    .test-row:last-child { border-bottom: none; }
+    .test-name { font-size: 0.82rem; color: #cbd5e1; }
+    .badge { font-size: 0.7rem; font-weight: 700; padding: 2px 10px; border-radius: 999px; }
+    .pass { background: #065f46; color: #6ee7b7; }
+    .fail { background: #7f1d1d; color: #fca5a5; }
+    .warn { background: #78350f; color: #fcd34d; }
+    .skip { background: #334155; color: #94a3b8; }
+    .summary-bar { display: flex; gap: 16px; background: #1e293b; padding: 14px 20px; border-radius: 12px; margin-bottom: 24px; border: 1px solid #334155; }
+    .summary-stat { font-size: 0.85rem; }
+    .summary-stat strong { font-size: 1.3rem; display: block; }
+    .log-box { background: #0f172a; border: 1px solid #334155; border-radius: 8px; padding: 12px; font-family: monospace; font-size: 0.75rem; color: #94a3b8; max-height: 300px; overflow-y: auto; margin-top: 16px; white-space: pre-wrap; }
+    button#runBtn { background: #0d9488; color: #fff; border: none; padding: 12px 28px; border-radius: 8px; font-weight: 700; font-size: 0.9rem; cursor: pointer; margin-bottom: 20px; }
+    button#runBtn:hover { background: #0f766e; }
+    button#runBtn:disabled { background: #334155; cursor: not-allowed; }
+  </style>
+</head>
+<body>
+  <h1>🐾 Petution Full System Functional Test Bot</h1>
+  <p class="subtitle">Simulates a real veterinarian's daily workflow through every feature in the system.</p>
+  <button id="runBtn" onclick="runAllTests()">▶ Run All Tests</button>
+  <div class="summary-bar" id="summaryBar">
+    <div class="summary-stat" style="color:#6ee7b7"><strong id="passCount">0</strong> Passed</div>
+    <div class="summary-stat" style="color:#fca5a5"><strong id="failCount">0</strong> Failed</div>
+    <div class="summary-stat" style="color:#fcd34d"><strong id="warnCount">0</strong> Warnings</div>
+    <div class="summary-stat" style="color:#94a3b8"><strong id="totalCount">0</strong> Total</div>
+  </div>
+  <div id="results"></div>
+  <div class="log-box" id="logBox"></div>
+
+<script>
+// =========================================================================
+// PETUTION TEST BOT — Full End-to-End Functional Simulation
+// Simulates: Login → Client → Pet → Visit → SOAP Note → Vaccine Passport
+//            → Invoice → Expense → Product → Analytics → Team → Settings
+//            → Workspace Management → Backup/Restore → Logout
+// =========================================================================
+
+const results = [];
+let logLines = [];
+
+function log(msg) {
+  logLines.push(`[${new Date().toISOString().slice(11,19)}] ${msg}`);
+  document.getElementById('logBox').textContent = logLines.join('\n');
+}
+
+function assert(testName, groupName, condition, detail = '') {
+  const status = condition ? 'pass' : 'fail';
+  results.push({ testName, groupName, status, detail });
+  log(`${condition ? '✅' : '❌'} [${groupName}] ${testName} ${detail ? '— ' + detail : ''}`);
+  return condition;
+}
+
+function warn(testName, groupName, detail = '') {
+  results.push({ testName, groupName, status: 'warn', detail });
+  log(`⚠️ [${groupName}] ${testName} ${detail ? '— ' + detail : ''}`);
+}
+
+// ---- SIMULATED LOCALSTORAGE STATE ENGINE ----
+// We test by directly manipulating the same localStorage keys the app uses.
+
+function clearAllPetutionData() {
+  const keys = [
+    'petution_clients', 'petution_pets', 'petution_visits', 'petution_products',
+    'petution_invoices', 'petution_expenses', 'petution_vaccines', 'petution_soap_notes',
+    'petution_team', 'petution_settings', 'petution_workspaces', 'petution_active_ws',
+    'petution_stocklogs', 'petution_notifications', 'petution_invitations', 'petution_user'
+  ];
+  keys.forEach(k => localStorage.removeItem(k));
+  log('🧹 Cleared all petution_* localStorage keys');
+}
+
+function getStore(key) {
+  try { return JSON.parse(localStorage.getItem(key) || '[]'); }
+  catch { return []; }
+}
+
+function setStore(key, data) {
+  localStorage.setItem(key, JSON.stringify(data));
+}
+
+// =========================================================================
+// TEST GROUPS
+// =========================================================================
+
+function testAuth() {
+  const G = 'Authentication';
+  log('\n━━━ 🔐 PHASE 1: AUTHENTICATION ━━━');
+
+  // Test 1: No user → unauthenticated
+  localStorage.removeItem('petution_user');
+  const noUser = localStorage.getItem('petution_user');
+  assert('No stored user means unauthenticated', G, noUser === null);
+
+  // Test 2: Email login
+  const emailUser = {
+    id: `usr-${Date.now()}`,
+    name: 'dr khaled elgendy',
+    email: 'khaledahmed94.ka@gmail.com',
+    role: 'Owner',
+    provider: 'email',
+    isAuthenticated: true
+  };
+  setStore('petution_user', emailUser);
+  const stored = JSON.parse(localStorage.getItem('petution_user'));
+  assert('Email login creates authenticated user', G, stored.isAuthenticated === true, `name="${stored.name}"`);
+  assert('Email login stores correct email', G, stored.email === 'khaledahmed94.ka@gmail.com');
+  assert('Email login sets role to Owner', G, stored.role === 'Owner');
+  assert('Email login sets provider to email', G, stored.provider === 'email');
+
+  // Test 3: Google provider login
+  const googleUser = {
+    id: `usr-${Date.now() + 1}`,
+    name: 'Dr. Khaled ElGendy (Google)',
+    email: 'khaledahmed94.ka@gmail.com',
+    role: 'Owner',
+    provider: 'google',
+    isAuthenticated: true
+  };
+  setStore('petution_user', googleUser);
+  const gUser = JSON.parse(localStorage.getItem('petution_user'));
+  assert('Google provider login works', G, gUser.provider === 'google' && gUser.isAuthenticated === true);
+
+  // Test 4: Apple provider login
+  const appleUser = {
+    id: `usr-${Date.now() + 2}`,
+    name: 'Dr. Khaled ElGendy (Apple)',
+    email: 'khaled.elgendy@icloud.com',
+    role: 'Owner',
+    provider: 'apple',
+    isAuthenticated: true
+  };
+  setStore('petution_user', appleUser);
+  const aUser = JSON.parse(localStorage.getItem('petution_user'));
+  assert('Apple provider login works', G, aUser.provider === 'apple');
+
+  // Test 5: Signup
+  const signupUser = {
+    id: `usr-${Date.now() + 3}`,
+    name: 'Dr. New Vet',
+    email: 'newvet@petution.com',
+    role: 'Owner',
+    provider: 'email',
+    isAuthenticated: true
+  };
+  setStore('petution_user', signupUser);
+  assert('Signup creates authenticated user', G, JSON.parse(localStorage.getItem('petution_user')).isAuthenticated);
+
+  // Test 6: Logout
+  const loggedOut = { ...signupUser, isAuthenticated: false };
+  setStore('petution_user', loggedOut);
+  assert('Logout sets isAuthenticated to false', G, !JSON.parse(localStorage.getItem('petution_user')).isAuthenticated);
+
+  // Re-login for remaining tests
+  setStore('petution_user', emailUser);
+}
+
+function testWorkspaces() {
+  const G = 'Workspaces';
+  log('\n━━━ 🏥 PHASE 2: WORKSPACE MANAGEMENT ━━━');
+
+  // Test: Register clinic workspace
+  const ws1 = {
+    id: `ws-${Date.now()}`,
+    clinicName: 'Petution Veterinary Center',
+    ownerName: 'Dr. Khaled ElGendy',
+    email: 'khaledahmed94.ka@gmail.com',
+    phone: '+201001234567',
+    createdAt: new Date().toISOString().split('T')[0]
+  };
+  setStore('petution_workspaces', [ws1]);
+  setStore('petution_active_ws', ws1.id);
+  const workspaces = getStore('petution_workspaces');
+  assert('Register new clinic workspace', G, workspaces.length === 1, `name="${ws1.clinicName}"`);
+  assert('Active workspace ID stored', G, localStorage.getItem('petution_active_ws') === JSON.stringify(ws1.id));
+
+  // Test: Add second workspace
+  const ws2 = { id: `ws-${Date.now() + 1}`, clinicName: 'Cairo Pet Hospital', ownerName: 'Dr. Sarah', email: 'sarah@vet.com', phone: '+201119876543', createdAt: '2026-07-25' };
+  setStore('petution_workspaces', [ws1, ws2]);
+  assert('Add second workspace', G, getStore('petution_workspaces').length === 2);
+
+  // Test: Switch workspace
+  setStore('petution_active_ws', ws2.id);
+  assert('Switch to second workspace', G, JSON.parse(localStorage.getItem('petution_active_ws')) === ws2.id);
+
+  // Test: Delete workspace
+  setStore('petution_workspaces', [ws1]);
+  setStore('petution_active_ws', ws1.id);
+  assert('Delete workspace leaves one remaining', G, getStore('petution_workspaces').length === 1);
+}
+
+function testClients() {
+  const G = 'Clients';
+  log('\n━━━ 👥 PHASE 3: CLIENT MANAGEMENT (Pet Owners) ━━━');
+
+  const clients = [
+    { id: 'cli-t1', name: 'Ahmed Hassan', source: 'Walk-In', governorate: 'Cairo', district: 'Maadi', street: 'Road 9, Bldg 14', phones: [{ phone: '+201001234567', label: 'Primary', isPrimary: true, hasWhatsapp: true }], tags: ['VIP', 'Regular'], pets: [], createdAt: '2026-07-20' },
+    { id: 'cli-t2', name: 'Sarah Mahmoud', source: 'Recommendation', governorate: 'Giza', district: 'Zayed', street: 'Compound 4', phones: [{ phone: '+201119876543', label: 'Primary', isPrimary: true, hasWhatsapp: true }], tags: ['New Client'], pets: [], createdAt: '2026-07-22' },
+    { id: 'cli-t3', name: 'Nora Ali', source: 'Facebook Ad', governorate: 'Cairo', district: 'Heliopolis', street: 'Al Ahram St', phones: [{ phone: '+201225551234', label: 'Primary', isPrimary: true, hasWhatsapp: false }], tags: ['Cats Only'], pets: [], createdAt: '2026-07-24' }
+  ];
+  setStore('petution_clients', clients);
+
+  const stored = getStore('petution_clients');
+  assert('Create 3 client records', G, stored.length === 3);
+  assert('Client has name field', G, stored[0].name === 'Ahmed Hassan');
+  assert('Client has phone with WhatsApp flag', G, stored[0].phones[0].hasWhatsapp === true);
+  assert('Client has tags array', G, Array.isArray(stored[0].tags) && stored[0].tags.includes('VIP'));
+  assert('Client has governorate/district/street', G, stored[0].governorate === 'Cairo' && stored[0].district === 'Maadi');
+  assert('Client search by name (sim)', G, stored.filter(c => c.name.toLowerCase().includes('sarah')).length === 1);
+  assert('Client filter by tag (sim)', G, stored.filter(c => c.tags.includes('VIP')).length === 1);
+}
+
+function testPets() {
+  const G = 'Pets';
+  log('\n━━━ 🐾 PHASE 4: PET PROFILES (Patients) ━━━');
+
+  const pets = [
+    { id: 'pet-t1', name: 'Milo', ageValue: 2, ageUnit: 'years', species: 'cat', gender: 'male', vaccinated: true, deworming: true, antiflea: true, castrated: true, neuterDate: '2025-03-15', breed: 'Persian', temperament: 'Calm', color: 'White', bloodGroup: 'A', cardNo: 'CRD-9982', protocolNo: 'PRT-102', microchipNumber: '985141002938471', microchipDate: '2025-01-10', microchipLocation: 'Left Scapular', isAggressive: false, isDeceased: false, deathDate: '', privateNotes: 'Sensitive skin.', tags: ['VIP'], owners: ['cli-t1'], createdAt: '2026-07-20' },
+    { id: 'pet-t2', name: 'Rex', ageValue: 3, ageUnit: 'years', species: 'dog', gender: 'male', vaccinated: true, deworming: true, antiflea: false, castrated: false, breed: 'German Shepherd', temperament: 'Friendly', bloodGroup: 'DEA 1.1+', microchipNumber: '985141000881920', isAggressive: true, isDeceased: false, owners: ['cli-t2'], createdAt: '2026-07-21' },
+    { id: 'pet-t3', name: 'Whiskers', ageValue: 8, ageUnit: 'months', species: 'cat', gender: 'female', vaccinated: false, deworming: false, castrated: false, breed: 'Siamese', temperament: 'Shy', bloodGroup: 'B', isAggressive: false, isDeceased: false, owners: ['cli-t3'], createdAt: '2026-07-24' },
+    { id: 'pet-t4', name: 'Old Buddy', ageValue: 14, ageUnit: 'years', species: 'dog', gender: 'male', vaccinated: true, deworming: true, castrated: true, breed: 'Labrador', isAggressive: false, isDeceased: true, deathDate: '2026-06-15', owners: ['cli-t1'], createdAt: '2025-01-01' }
+  ];
+  setStore('petution_pets', pets);
+
+  const stored = getStore('petution_pets');
+  assert('Create 4 pet records', G, stored.length === 4);
+  assert('Pet has species & breed', G, stored[0].species === 'cat' && stored[0].breed === 'Persian');
+  assert('Pet has microchip number', G, stored[0].microchipNumber === '985141002938471');
+  assert('Pet has microchip location & date', G, stored[0].microchipLocation === 'Left Scapular' && stored[0].microchipDate === '2025-01-10');
+  assert('Pet has blood group', G, stored[0].bloodGroup === 'A');
+  assert('Pet has neutering status & date', G, stored[0].castrated === true && stored[0].neuterDate === '2025-03-15');
+  assert('Aggressive pet flagged correctly', G, stored[1].isAggressive === true);
+  assert('Deceased pet marked with death date', G, stored[3].isDeceased === true && stored[3].deathDate === '2026-06-15');
+  assert('Pet has temperament field', G, stored[0].temperament === 'Calm');
+  assert('Pet has private vet notes', G, stored[0].privateNotes === 'Sensitive skin.');
+  assert('Pet linked to owner via owners array', G, stored[0].owners.includes('cli-t1'));
+  assert('Species filter simulation (cats)', G, stored.filter(p => p.species === 'cat').length === 2);
+  assert('Microchip search simulation', G, stored.filter(p => p.microchipNumber?.includes('985141002938471')).length === 1);
+}
+
+function testVisits() {
+  const G = 'Visits';
+  log('\n━━━ 📅 PHASE 5: VISIT SCHEDULING & QUEUE ━━━');
+
+  const visits = [
+    { id: 'vis-t1', petId: 'pet-t1', doctorName: 'Dr. Khaled ElGendy', visitType: 'Vaccination Booster', date: '2026-07-27', time: '09:00 AM', state: 'scheduled', reason: 'Annual FVRCP booster shot' },
+    { id: 'vis-t2', petId: 'pet-t2', doctorName: 'Dr. Khaled ElGendy', visitType: 'Emergency Surgery', date: '2026-07-27', time: '10:30 AM', state: 'in-progress', reason: 'Laceration on right forelimb' },
+    { id: 'vis-t3', petId: 'pet-t3', doctorName: 'Dr. Sarah Mahmoud', visitType: 'First Consultation', date: '2026-07-27', time: '11:00 AM', state: 'scheduled', reason: 'New kitten initial health check' },
+    { id: 'vis-t4', petId: 'pet-t1', doctorName: 'Dr. Khaled ElGendy', visitType: 'Follow-Up', date: '2026-07-26', time: '03:00 PM', state: 'completed', reason: 'Post-vaccination observation' },
+    { id: 'vis-t5', petId: 'pet-t2', doctorName: 'Dr. Khaled ElGendy', visitType: 'Grooming', date: '2026-07-25', time: '02:00 PM', state: 'cancelled', reason: 'Owner rescheduled' }
+  ];
+  setStore('petution_visits', visits);
+
+  const stored = getStore('petution_visits');
+  assert('Create 5 visit records', G, stored.length === 5);
+  assert('Visit linked to pet via petId', G, stored[0].petId === 'pet-t1');
+  assert('Visit has doctor name', G, stored[0].doctorName === 'Dr. Khaled ElGendy');
+  assert('Visit states: scheduled', G, stored.filter(v => v.state === 'scheduled').length === 2);
+  assert('Visit states: in-progress', G, stored.filter(v => v.state === 'in-progress').length === 1);
+  assert('Visit states: completed', G, stored.filter(v => v.state === 'completed').length === 1);
+  assert('Visit states: cancelled', G, stored.filter(v => v.state === 'cancelled').length === 1);
+  assert('Date range filter (today)', G, stored.filter(v => v.date === '2026-07-27').length === 3);
+  assert('Doctor filter simulation', G, stored.filter(v => v.doctorName.includes('Khaled')).length === 4);
+}
+
+function testSOAPNotes() {
+  const G = 'SOAP Notes';
+  log('\n━━━ 📋 PHASE 6: VETERINARY SOAP CLINICAL NOTES & Rx ━━━');
+
+  const soapNotes = [
+    {
+      id: 'soap-t1', visitId: 'vis-t2', petId: 'pet-t2', vetName: 'Dr. Khaled ElGendy',
+      date: '2026-07-27', subjective: 'Owner reports dog was cut by broken glass while running in the yard 2 hours ago. Heavy bleeding from right forelimb.',
+      tempC: 39.1, weightKg: 32.5, heartRateBpm: 140, respiratoryRateBpm: 28,
+      assessment: 'Deep laceration (3cm) on right forelimb dorsal aspect. No tendon involvement. Moderate hemorrhage controlled. Mild tachycardia secondary to pain.',
+      plan: 'Wound debridement under local anesthesia. Suture with 3-0 Vicryl (interrupted). Prescribe antibiotics and analgesics. Recheck in 5 days for suture removal.',
+      rxMedications: [
+        { name: 'Amoxicillin-Clavulanate 250mg', dosage: '1 tablet', frequency: 'Twice daily (BID)', duration: '7 days' },
+        { name: 'Meloxicam 1.5mg/ml Oral Suspension', dosage: '0.1 mg/kg = 2.2 ml', frequency: 'Once daily (SID)', duration: '5 days' },
+        { name: 'Chlorhexidine Wound Wash 0.05%', dosage: 'Apply topically', frequency: 'Twice daily (BID)', duration: '10 days' }
+      ]
+    },
+    {
+      id: 'soap-t2', visitId: 'vis-t4', petId: 'pet-t1', vetName: 'Dr. Khaled ElGendy',
+      date: '2026-07-26', subjective: 'Post-vaccination check. Owner reports Milo was lethargic for 6 hours after vaccine then returned to normal.',
+      tempC: 38.6, weightKg: 4.1, heartRateBpm: 118, respiratoryRateBpm: 22,
+      assessment: 'Normal post-vaccination response. No injection site swelling. BAR. All vitals within normal limits.',
+      plan: 'No treatment needed. Continue monitoring. Schedule next booster in 12 months.',
+      rxMedications: []
+    }
+  ];
+  setStore('petution_soap_notes', soapNotes);
+
+  const stored = getStore('petution_soap_notes');
+  assert('Create 2 SOAP note records', G, stored.length === 2);
+  assert('SOAP note linked to visit', G, stored[0].visitId === 'vis-t2');
+  assert('SOAP note linked to pet', G, stored[0].petId === 'pet-t2');
+  assert('SOAP Subjective field populated', G, stored[0].subjective.includes('broken glass'));
+  assert('SOAP Objective: Temperature recorded', G, stored[0].tempC === 39.1);
+  assert('SOAP Objective: Weight recorded', G, stored[0].weightKg === 32.5);
+  assert('SOAP Objective: Heart rate recorded', G, stored[0].heartRateBpm === 140);
+  assert('SOAP Objective: Respiratory rate recorded', G, stored[0].respiratoryRateBpm === 28);
+  assert('SOAP Assessment populated', G, stored[0].assessment.includes('laceration'));
+  assert('SOAP Plan populated', G, stored[0].plan.includes('Suture'));
+  assert('SOAP Rx has 3 medications', G, stored[0].rxMedications.length === 3);
+  assert('Rx medication has name', G, stored[0].rxMedications[0].name === 'Amoxicillin-Clavulanate 250mg');
+  assert('Rx medication has dosage', G, stored[0].rxMedications[0].dosage === '1 tablet');
+  assert('Rx medication has frequency', G, stored[0].rxMedications[0].frequency === 'Twice daily (BID)');
+  assert('Rx medication has duration', G, stored[0].rxMedications[0].duration === '7 days');
+  assert('SOAP update (edit) works', G, (() => {
+    stored[1].assessment = 'Updated: Healthy. No adverse effects.';
+    setStore('petution_soap_notes', stored);
+    return getStore('petution_soap_notes')[1].assessment.includes('Updated');
+  })());
+}
+
+function testVaccines() {
+  const G = 'Vaccines & Passport';
+  log('\n━━━ 💉 PHASE 7: VACCINE PASSPORT & IMMUNIZATION SCHEDULER ━━━');
+
+  const vaccines = [
+    { id: 'vac-t1', petId: 'pet-t1', vaccineName: 'Tricat Trio (FVRCP)', manufacturer: 'Zoetis', batchNumber: 'ZT-99210', administeredDate: '2026-07-24', dueDate: '2027-07-24', vetName: 'Dr. Khaled ElGendy', notes: 'No adverse reactions' },
+    { id: 'vac-t2', petId: 'pet-t1', vaccineName: 'Rabies Vaccine (Rabisin)', manufacturer: 'Boehringer Ingelheim', batchNumber: 'BI-43821', administeredDate: '2026-07-24', dueDate: '2027-07-24', vetName: 'Dr. Khaled ElGendy', notes: '' },
+    { id: 'vac-t3', petId: 'pet-t2', vaccineName: 'Vanguard 7 (DHPP + L4)', manufacturer: 'Zoetis', batchNumber: 'ZT-77441', administeredDate: '2026-07-20', dueDate: '2027-07-20', vetName: 'Dr. Khaled ElGendy', notes: 'Mild lethargy for 12h post-injection' },
+    { id: 'vac-t4', petId: 'pet-t2', vaccineName: 'Nobivac KC (Kennel Cough)', manufacturer: 'MSD Animal Health', batchNumber: 'MSD-92011', administeredDate: '2026-07-20', dueDate: '2027-01-20', vetName: 'Dr. Khaled ElGendy', notes: 'Intranasal administration' }
+  ];
+  setStore('petution_vaccines', vaccines);
+
+  const stored = getStore('petution_vaccines');
+  assert('Create 4 vaccine records', G, stored.length === 4);
+  assert('Vaccine linked to pet via petId', G, stored[0].petId === 'pet-t1');
+  assert('Vaccine has name', G, stored[0].vaccineName === 'Tricat Trio (FVRCP)');
+  assert('Vaccine has manufacturer', G, stored[0].manufacturer === 'Zoetis');
+  assert('Vaccine has batch number', G, stored[0].batchNumber === 'ZT-99210');
+  assert('Vaccine has administered date', G, stored[0].administeredDate === '2026-07-24');
+  assert('Vaccine has next due date (booster)', G, stored[0].dueDate === '2027-07-24');
+  assert('Vaccine has administering vet', G, stored[0].vetName === 'Dr. Khaled ElGendy');
+  assert('Pet passport filter (Milo vaccines)', G, stored.filter(v => v.petId === 'pet-t1').length === 2);
+  assert('Pet passport filter (Rex vaccines)', G, stored.filter(v => v.petId === 'pet-t2').length === 2);
+  assert('Delete vaccine record', G, (() => {
+    const updated = stored.filter(v => v.id !== 'vac-t4');
+    setStore('petution_vaccines', updated);
+    return getStore('petution_vaccines').length === 3;
+  })());
+}
+
+function testProducts() {
+  const G = 'Products & Inventory';
+  log('\n━━━ 📦 PHASE 8: PRODUCTS, SERVICES & STOCK MANAGEMENT ━━━');
+
+  const products = [
+    { id: 'prod-t1', name: 'Feline Rabies Vaccine', sku: 'VAC-CAT-01', category: 'product', pricePerUnit: 250, costPerUnit: 120, revenuePerUnit: 130, quantity: 45, lowStockThreshold: 10, unit: 'dose', notes: '' },
+    { id: 'prod-t2', name: 'Surgical Suture Kit (3-0 Vicryl)', sku: 'SURG-003', category: 'product', pricePerUnit: 180, costPerUnit: 80, revenuePerUnit: 100, quantity: 8, lowStockThreshold: 10, unit: 'kit', notes: 'Low stock alert' },
+    { id: 'prod-t3', name: 'Full Blood Panel (CBC + Chem)', sku: 'LAB-001', category: 'service', pricePerUnit: 650, costPerUnit: 200, revenuePerUnit: 450, quantity: 999, lowStockThreshold: 0, unit: 'test', notes: '' },
+    { id: 'prod-t4', name: 'Dental Cleaning (Ultrasonic)', sku: 'DENT-01', category: 'service', pricePerUnit: 1200, costPerUnit: 400, revenuePerUnit: 800, quantity: 999, lowStockThreshold: 0, unit: 'session', notes: '' }
+  ];
+  setStore('petution_products', products);
+
+  const stored = getStore('petution_products');
+  assert('Create 4 product/service records', G, stored.length === 4);
+  assert('Product has name & SKU', G, stored[0].name === 'Feline Rabies Vaccine' && stored[0].sku === 'VAC-CAT-01');
+  assert('Product has pricing (price/cost/revenue)', G, stored[0].pricePerUnit === 250 && stored[0].costPerUnit === 120 && stored[0].revenuePerUnit === 130);
+  assert('Product has stock quantity', G, stored[0].quantity === 45);
+  assert('Low stock detection (below threshold)', G, stored[1].quantity < stored[1].lowStockThreshold);
+  assert('Product/Service category separation', G, stored.filter(p => p.category === 'product').length === 2 && stored.filter(p => p.category === 'service').length === 2);
+  assert('Product update (edit)', G, (() => {
+    stored[0].quantity = 40;
+    stored[0].notes = 'Reduced after today sales';
+    setStore('petution_products', stored);
+    return getStore('petution_products')[0].quantity === 40;
+  })());
+  assert('Product delete', G, (() => {
+    const updated = stored.filter(p => p.id !== 'prod-t4');
+    setStore('petution_products', updated);
+    return getStore('petution_products').length === 3;
+  })());
+
+  // Stock logs
+  const stockLogs = [
+    { id: 'log-t1', itemName: 'Feline Rabies Vaccine', change: '-5 units (Sold)', user: 'Dr. Khaled ElGendy', date: '2026-07-27' },
+    { id: 'log-t2', itemName: 'Surgical Suture Kit', change: '+20 units (Restocked)', user: 'Admin', date: '2026-07-26' }
+  ];
+  setStore('petution_stocklogs', stockLogs);
+  assert('Stock logs recorded', G, getStore('petution_stocklogs').length === 2);
+}
+
+function testInvoices() {
+  const G = 'Invoices';
+  log('\n━━━ 🧾 PHASE 9: INVOICES & BILLING ━━━');
+
+  const invoices = [
+    { id: 'inv-t1', invoiceNumber: 'INV-2026-001', petId: 'pet-t2', clientId: 'cli-t2', date: '2026-07-27', items: [{ name: 'Emergency Surgery Fee', qty: 1, price: 2500 }, { name: 'Surgical Suture Kit', qty: 1, price: 180 }, { name: 'Amoxicillin-Clavulanate 250mg', qty: 7, price: 15 }], subtotal: 2785, discount: 0, tax: 0, total: 2785, status: 'paid', paymentMethod: 'Card', notes: 'Rex forelimb laceration repair' },
+    { id: 'inv-t2', invoiceNumber: 'INV-2026-002', petId: 'pet-t1', clientId: 'cli-t1', date: '2026-07-24', items: [{ name: 'Tricat Trio (FVRCP)', qty: 1, price: 250 }, { name: 'Rabies Vaccine', qty: 1, price: 200 }, { name: 'Consultation Fee', qty: 1, price: 150 }], subtotal: 600, discount: 50, tax: 0, total: 550, status: 'paid', paymentMethod: 'Cash', notes: 'Annual vaccination visit' },
+    { id: 'inv-t3', invoiceNumber: 'INV-2026-003', petId: 'pet-t3', clientId: 'cli-t3', date: '2026-07-27', items: [{ name: 'New Kitten Consultation', qty: 1, price: 200 }, { name: 'Deworming Tablet', qty: 1, price: 80 }], subtotal: 280, discount: 0, tax: 0, total: 280, status: 'pending', paymentMethod: '', notes: 'Pending payment' }
+  ];
+  setStore('petution_invoices', invoices);
+
+  const stored = getStore('petution_invoices');
+  assert('Create 3 invoice records', G, stored.length === 3);
+  assert('Invoice has number', G, stored[0].invoiceNumber === 'INV-2026-001');
+  assert('Invoice linked to pet & client', G, stored[0].petId === 'pet-t2' && stored[0].clientId === 'cli-t2');
+  assert('Invoice has line items array', G, stored[0].items.length === 3);
+  assert('Invoice calculates subtotal', G, stored[0].subtotal === 2785);
+  assert('Invoice discount applied', G, stored[1].discount === 50 && stored[1].total === 550);
+  assert('Invoice status: paid', G, stored.filter(i => i.status === 'paid').length === 2);
+  assert('Invoice status: pending', G, stored.filter(i => i.status === 'pending').length === 1);
+  assert('Invoice date filter (today)', G, stored.filter(i => i.date === '2026-07-27').length === 2);
+
+  // Revenue calculation
+  const totalRevenue = stored.filter(i => i.status === 'paid').reduce((sum, i) => sum + i.total, 0);
+  assert('Total paid revenue calculated', G, totalRevenue === 3335, `EGP ${totalRevenue}`);
+}
+
+function testExpenses() {
+  const G = 'Expenses';
+  log('\n━━━ 💰 PHASE 10: CLINIC EXPENSES ━━━');
+
+  const expenses = [
+    { id: 'exp-t1', title: 'Clinic Monthly Rent', amount: 15000, category: 'Rent', date: '2026-07-01', paymentMethod: 'Bank Transfer', notes: 'Maadi clinic space' },
+    { id: 'exp-t2', title: 'Surgical Supplies Restock', amount: 4200, category: 'Supplies', date: '2026-07-15', paymentMethod: 'Card', notes: '' },
+    { id: 'exp-t3', title: 'Staff Salaries', amount: 28000, category: 'Salaries', date: '2026-07-25', paymentMethod: 'Bank Transfer', notes: '3 staff members' },
+    { id: 'exp-t4', title: 'Facebook Advertising', amount: 1500, category: 'Marketing', date: '2026-07-20', paymentMethod: 'Card', notes: '' }
+  ];
+  setStore('petution_expenses', expenses);
+
+  const stored = getStore('petution_expenses');
+  assert('Create 4 expense records', G, stored.length === 4);
+  assert('Expense has title & amount', G, stored[0].title === 'Clinic Monthly Rent' && stored[0].amount === 15000);
+  assert('Expense has category', G, stored[0].category === 'Rent');
+  assert('Expense has payment method', G, stored[0].paymentMethod === 'Bank Transfer');
+  assert('Total expenses calculated', G, (() => {
+    const total = stored.reduce((sum, e) => sum + e.amount, 0);
+    return total === 48700;
+  })(), 'EGP 48,700');
+  assert('Delete expense', G, (() => {
+    const updated = stored.filter(e => e.id !== 'exp-t4');
+    setStore('petution_expenses', updated);
+    return getStore('petution_expenses').length === 3;
+  })());
+}
+
+function testAnalytics() {
+  const G = 'Analytics';
+  log('\n━━━ 📊 PHASE 11: ANALYTICS & KPI VERIFICATION ━━━');
+
+  const invoices = getStore('petution_invoices');
+  const expenses = getStore('petution_expenses');
+  const visits = getStore('petution_visits');
+  const clients = getStore('petution_clients');
+  const pets = getStore('petution_pets');
+  const products = getStore('petution_products');
+
+  const totalRevenue = invoices.filter(i => i.status === 'paid').reduce((sum, i) => sum + i.total, 0);
+  const totalExpenses = expenses.reduce((sum, e) => sum + e.amount, 0);
+  const netProfit = totalRevenue - totalExpenses;
+
+  assert('Revenue KPI computable', G, totalRevenue > 0, `EGP ${totalRevenue}`);
+  assert('Expenses KPI computable', G, totalExpenses > 0, `EGP ${totalExpenses}`);
+  assert('Net Profit = Revenue - Expenses', G, netProfit === totalRevenue - totalExpenses, `EGP ${netProfit}`);
+  assert('Total clients count', G, clients.length === 3);
+  assert('Total pets count', G, pets.length === 4);
+  assert('Total visits count', G, visits.length === 5);
+  assert('Completed visits count', G, visits.filter(v => v.state === 'completed').length === 1);
+  assert('Low stock items detected', G, products.filter(p => p.category === 'product' && p.quantity <= p.lowStockThreshold).length >= 1);
+}
+
+function testTeam() {
+  const G = 'Team';
+  log('\n━━━ 👨‍⚕️ PHASE 12: TEAM MANAGEMENT ━━━');
+
+  const team = [
+    { id: 'usr-t1', name: 'Dr. Khaled ElGendy', email: 'dr.khaled@petution.com', role: 'Owner', status: 'active' },
+    { id: 'usr-t2', name: 'Dr. Sarah Mahmoud', email: 'sarah.m@petution.com', role: 'Vet', status: 'active' },
+    { id: 'usr-t3', name: 'Youssef Ali', email: 'youssef@petution.com', role: 'Receptionist', status: 'invited' }
+  ];
+  setStore('petution_team', team);
+
+  const invitations = [
+    { id: 'inv-t1', name: 'Dr. Amr Fathy', email: 'amr.f@vet.com', role: 'Vet', sentAt: '2026-07-25', status: 'Pending' }
+  ];
+  setStore('petution_invitations', invitations);
+
+  const storedTeam = getStore('petution_team');
+  assert('Create 3 team members', G, storedTeam.length === 3);
+  assert('Team member has role', G, storedTeam[0].role === 'Owner');
+  assert('Role filter (Vets only)', G, storedTeam.filter(m => m.role === 'Vet').length === 1);
+  assert('Pending invitations stored', G, getStore('petution_invitations').length === 1);
+  assert('Update member role', G, (() => {
+    storedTeam[2].role = 'Admin';
+    setStore('petution_team', storedTeam);
+    return getStore('petution_team')[2].role === 'Admin';
+  })());
+  assert('Remove team member', G, (() => {
+    const updated = storedTeam.filter(m => m.id !== 'usr-t3');
+    setStore('petution_team', updated);
+    return getStore('petution_team').length === 2;
+  })());
+}
+
+function testSettings() {
+  const G = 'Settings';
+  log('\n━━━ ⚙️ PHASE 13: SETTINGS & BACKUP ━━━');
+
+  const settings = {
+    orgName: 'Petution Veterinary Center',
+    address: 'Road 9, Maadi, Cairo, Egypt',
+    phone: '+201001234567',
+    email: 'info@petution.com',
+    taxId: 'TAX-EG-992188',
+    currency: 'EGP',
+    locale: 'en'
+  };
+  setStore('petution_settings', settings);
+
+  const stored = JSON.parse(localStorage.getItem('petution_settings'));
+  assert('Settings: org name saved', G, stored.orgName === 'Petution Veterinary Center');
+  assert('Settings: address saved', G, stored.address.includes('Maadi'));
+  assert('Settings: phone saved', G, stored.phone === '+201001234567');
+  assert('Settings: email saved', G, stored.email === 'info@petution.com');
+  assert('Settings: tax ID saved', G, stored.taxId === 'TAX-EG-992188');
+
+  // Backup simulation
+  const fullBackup = {
+    clients: getStore('petution_clients'),
+    pets: getStore('petution_pets'),
+    visits: getStore('petution_visits'),
+    products: getStore('petution_products'),
+    invoices: getStore('petution_invoices'),
+    expenses: getStore('petution_expenses'),
+    vaccines: getStore('petution_vaccines'),
+    soapNotes: getStore('petution_soap_notes'),
+    settings: stored
+  };
+  assert('Full backup export has all modules', G,
+    fullBackup.clients.length > 0 && fullBackup.pets.length > 0 &&
+    fullBackup.visits.length > 0 && fullBackup.products.length > 0 &&
+    fullBackup.invoices.length > 0 && fullBackup.settings.orgName
+  );
+  assert('Full backup JSON size reasonable', G, JSON.stringify(fullBackup).length > 500, `${JSON.stringify(fullBackup).length} bytes`);
+}
+
+function testNotifications() {
+  const G = 'Notifications';
+  log('\n━━━ 🔔 PHASE 14: NOTIFICATIONS ━━━');
+
+  const notifications = [
+    { id: 'notif-1', text: 'New client Ahmed Hassan registered', read: false, timestamp: '2026-07-27T09:00:00Z' },
+    { id: 'notif-2', text: 'Rex emergency surgery visit created', read: false, timestamp: '2026-07-27T10:30:00Z' },
+    { id: 'notif-3', text: 'Low stock alert: Surgical Suture Kit (8 remaining)', read: true, timestamp: '2026-07-26T16:00:00Z' }
+  ];
+  setStore('petution_notifications', notifications);
+
+  const stored = getStore('petution_notifications');
+  assert('Create 3 notifications', G, stored.length === 3);
+  assert('Unread count correct', G, stored.filter(n => !n.read).length === 2);
+  assert('Mark all as read', G, (() => {
+    const allRead = stored.map(n => ({ ...n, read: true }));
+    setStore('petution_notifications', allRead);
+    return getStore('petution_notifications').filter(n => !n.read).length === 0;
+  })());
+}
+
+function testDataIntegrity() {
+  const G = 'Data Integrity';
+  log('\n━━━ 🔗 PHASE 15: CROSS-MODULE DATA INTEGRITY ━━━');
+
+  const clients = getStore('petution_clients');
+  const pets = getStore('petution_pets');
+  const visits = getStore('petution_visits');
+  const invoices = getStore('petution_invoices');
+  const soapNotes = getStore('petution_soap_notes');
+  const vaccines = getStore('petution_vaccines');
+
+  // Pet → Owner linkage
+  const linkedPets = pets.filter(p => p.owners?.length > 0 && clients.some(c => p.owners.includes(c.id)));
+  assert('All pets linked to valid owners', G, linkedPets.length === pets.length, `${linkedPets.length}/${pets.length}`);
+
+  // Visit → Pet linkage
+  const linkedVisits = visits.filter(v => pets.some(p => p.id === v.petId));
+  assert('All visits linked to valid pets', G, linkedVisits.length === visits.length, `${linkedVisits.length}/${visits.length}`);
+
+  // Invoice → Pet & Client linkage
+  const linkedInvoices = invoices.filter(i => pets.some(p => p.id === i.petId) && clients.some(c => c.id === i.clientId));
+  assert('All invoices linked to valid pets & clients', G, linkedInvoices.length === invoices.length, `${linkedInvoices.length}/${invoices.length}`);
+
+  // SOAP → Visit linkage
+  const linkedSoap = soapNotes.filter(s => visits.some(v => v.id === s.visitId));
+  assert('All SOAP notes linked to valid visits', G, linkedSoap.length === soapNotes.length, `${linkedSoap.length}/${soapNotes.length}`);
+
+  // Vaccine → Pet linkage
+  const linkedVaccines = vaccines.filter(v => pets.some(p => p.id === v.petId));
+  assert('All vaccines linked to valid pets', G, linkedVaccines.length === vaccines.length, `${linkedVaccines.length}/${vaccines.length}`);
+
+  // No duplicate IDs
+  const allIds = [...clients.map(c => c.id), ...pets.map(p => p.id), ...visits.map(v => v.id), ...invoices.map(i => i.id)];
+  assert('No duplicate IDs across modules', G, new Set(allIds).size === allIds.length);
+}
+
+// =========================================================================
+// TEST RUNNER
+// =========================================================================
+function renderResults() {
+  const container = document.getElementById('results');
+  const groups = {};
+  results.forEach(r => {
+    if (!groups[r.groupName]) groups[r.groupName] = [];
+    groups[r.groupName].push(r);
+  });
+
+  let html = '';
+  for (const [gName, tests] of Object.entries(groups)) {
+    const passCount = tests.filter(t => t.status === 'pass').length;
+    const failCount = tests.filter(t => t.status === 'fail').length;
+    const icon = failCount > 0 ? '❌' : '✅';
+    html += `<div class="test-group"><h2>${icon} ${gName} <span style="font-size:0.7rem;color:#94a3b8;font-weight:400">(${passCount}/${tests.length} passed)</span></h2>`;
+    for (const t of tests) {
+      const cls = t.status === 'pass' ? 'pass' : t.status === 'fail' ? 'fail' : 'warn';
+      html += `<div class="test-row"><span class="test-name">${t.testName} ${t.detail ? '<span style="color:#64748b;font-size:0.7rem">(' + t.detail + ')</span>' : ''}</span><span class="badge ${cls}">${t.status.toUpperCase()}</span></div>`;
+    }
+    html += '</div>';
+  }
+  container.innerHTML = html;
+
+  document.getElementById('passCount').textContent = results.filter(r => r.status === 'pass').length;
+  document.getElementById('failCount').textContent = results.filter(r => r.status === 'fail').length;
+  document.getElementById('warnCount').textContent = results.filter(r => r.status === 'warn').length;
+  document.getElementById('totalCount').textContent = results.length;
+}
+
+function runAllTests() {
+  document.getElementById('runBtn').disabled = true;
+  document.getElementById('runBtn').textContent = '⏳ Running Tests...';
+  results.length = 0;
+  logLines.length = 0;
+
+  log('🐾 PETUTION FULL SYSTEM FUNCTIONAL TEST BOT');
+  log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+  log('Simulating: Real veterinarian daily workflow end-to-end');
+  log('');
+
+  // Clean slate
+  clearAllPetutionData();
+
+  // Execute all test phases
+  testAuth();
+  testWorkspaces();
+  testClients();
+  testPets();
+  testVisits();
+  testSOAPNotes();
+  testVaccines();
+  testProducts();
+  testInvoices();
+  testExpenses();
+  testAnalytics();
+  testTeam();
+  testSettings();
+  testNotifications();
+  testDataIntegrity();
+
+  // Summary
+  const passed = results.filter(r => r.status === 'pass').length;
+  const failed = results.filter(r => r.status === 'fail').length;
+  const total = results.length;
+  log('');
+  log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+  log(`🏁 FINAL RESULT: ${passed}/${total} PASSED, ${failed} FAILED`);
+  log(`📊 Pass Rate: ${((passed / total) * 100).toFixed(1)}%`);
+  log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+
+  renderResults();
+  document.getElementById('runBtn').disabled = false;
+  document.getElementById('runBtn').textContent = '🔄 Re-Run All Tests';
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,13 @@
+services:
+  - type: web
+    name: petution-app
+    env: node
+    buildCommand: npm run build
+    startCommand: node server/index.js
+    envVars:
+      - key: NODE_VERSION
+        value: 20.11.0
+      - key: PORT
+        value: 3001
+      - key: DATABASE_URL
+        value: postgresql://petution_user:petution_pass@localhost:5432/petution_db
