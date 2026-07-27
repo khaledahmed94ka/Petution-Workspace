@@ -266,3 +266,59 @@ CREATE TABLE IF NOT EXISTS shopify_sync_logs (
     status VARCHAR(50) NOT NULL DEFAULT 'success',
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
+
+-- -----------------------------------------------------------------------------
+-- 13. ROW-LEVEL SECURITY (RLS) POLICIES
+-- Enables strict multi-tenant data isolation per workspace_id
+-- -----------------------------------------------------------------------------
+
+-- Enable RLS on all tenant tables
+ALTER TABLE users ENABLE ROW LEVEL SECURITY;
+ALTER TABLE clients ENABLE ROW LEVEL SECURITY;
+ALTER TABLE pets ENABLE ROW LEVEL SECURITY;
+ALTER TABLE visits ENABLE ROW LEVEL SECURITY;
+ALTER TABLE soap_notes ENABLE ROW LEVEL SECURITY;
+ALTER TABLE products ENABLE ROW LEVEL SECURITY;
+ALTER TABLE invoices ENABLE ROW LEVEL SECURITY;
+ALTER TABLE stock_logs ENABLE ROW LEVEL SECURITY;
+ALTER TABLE expenses ENABLE ROW LEVEL SECURITY;
+ALTER TABLE vaccines ENABLE ROW LEVEL SECURITY;
+ALTER TABLE shopify_sync_logs ENABLE ROW LEVEL SECURITY;
+
+-- Create RLS Policies for Tenant Isolation
+DO $$ 
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE policyname = 'users_workspace_isolation') THEN
+        CREATE POLICY users_workspace_isolation ON users FOR ALL USING (workspace_id = current_setting('app.current_workspace_id', true)::uuid);
+    END IF;
+    IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE policyname = 'clients_workspace_isolation') THEN
+        CREATE POLICY clients_workspace_isolation ON clients FOR ALL USING (workspace_id = current_setting('app.current_workspace_id', true)::uuid);
+    END IF;
+    IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE policyname = 'pets_workspace_isolation') THEN
+        CREATE POLICY pets_workspace_isolation ON pets FOR ALL USING (workspace_id = current_setting('app.current_workspace_id', true)::uuid);
+    END IF;
+    IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE policyname = 'visits_workspace_isolation') THEN
+        CREATE POLICY visits_workspace_isolation ON visits FOR ALL USING (workspace_id = current_setting('app.current_workspace_id', true)::uuid);
+    END IF;
+    IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE policyname = 'soap_notes_workspace_isolation') THEN
+        CREATE POLICY soap_notes_workspace_isolation ON soap_notes FOR ALL USING (workspace_id = current_setting('app.current_workspace_id', true)::uuid);
+    END IF;
+    IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE policyname = 'products_workspace_isolation') THEN
+        CREATE POLICY products_workspace_isolation ON products FOR ALL USING (workspace_id = current_setting('app.current_workspace_id', true)::uuid);
+    END IF;
+    IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE policyname = 'invoices_workspace_isolation') THEN
+        CREATE POLICY invoices_workspace_isolation ON invoices FOR ALL USING (workspace_id = current_setting('app.current_workspace_id', true)::uuid);
+    END IF;
+    IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE policyname = 'stock_logs_workspace_isolation') THEN
+        CREATE POLICY stock_logs_workspace_isolation ON stock_logs FOR ALL USING (workspace_id = current_setting('app.current_workspace_id', true)::uuid);
+    END IF;
+    IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE policyname = 'expenses_workspace_isolation') THEN
+        CREATE POLICY expenses_workspace_isolation ON expenses FOR ALL USING (workspace_id = current_setting('app.current_workspace_id', true)::uuid);
+    END IF;
+    IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE policyname = 'vaccines_workspace_isolation') THEN
+        CREATE POLICY vaccines_workspace_isolation ON vaccines FOR ALL USING (workspace_id = current_setting('app.current_workspace_id', true)::uuid);
+    END IF;
+    IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE policyname = 'shopify_sync_logs_workspace_isolation') THEN
+        CREATE POLICY shopify_sync_logs_workspace_isolation ON shopify_sync_logs FOR ALL USING (workspace_id = current_setting('app.current_workspace_id', true)::uuid);
+    END IF;
+END $$;

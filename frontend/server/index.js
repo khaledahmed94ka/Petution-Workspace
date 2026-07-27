@@ -11,6 +11,7 @@ import { apiRouter } from './routes/api.js';
 import { shopifyRouter } from './routes/shopify.js';
 
 import { globalApiLimiter, webhookLimiter } from './middleware/rateLimiter.js';
+import { enforceWorkspaceIsolation } from './middleware/rlsMiddleware.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -22,8 +23,8 @@ const PORT = process.env.PORT || 3001;
 app.use(cors());
 app.use(express.json({ limit: '10mb' }));
 
-// API & Webhook Routes with Rate Limiting Protection
-app.use('/api/v1', globalApiLimiter, apiRouter);
+// API & Webhook Routes with Rate Limiting & RLS Isolation Protection
+app.use('/api/v1', globalApiLimiter, enforceWorkspaceIsolation, apiRouter);
 app.use('/api/webhooks/shopify', webhookLimiter, shopifyRouter);
 
 // Serve static compiled frontend assets in production
