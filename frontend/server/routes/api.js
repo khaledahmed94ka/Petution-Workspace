@@ -43,9 +43,19 @@ let soapNotes = [
 ];
 
 import { authLimiter } from '../middleware/rateLimiter.js';
+import { 
+  validateAuthLogin,
+  validateClientPayload,
+  validatePetPayload,
+  validateVisitPayload,
+  validateSOAPNotePayload,
+  validateProductPayload,
+  validateInvoicePayload,
+  validateExpensePayload 
+} from '../middleware/validator.js';
 
 // --- AUTHENTICATION ENDPOINTS ---
-apiRouter.post('/auth/login', authLimiter, (req, res) => {
+apiRouter.post('/auth/login', authLimiter, validateAuthLogin, (req, res) => {
   const { email, password } = req.body;
   const token = `mock-jwt-token-${Date.now()}`;
   res.status(200).json({
@@ -63,42 +73,42 @@ apiRouter.post('/auth/login', authLimiter, (req, res) => {
 
 // --- CORE RESOURCE ENDPOINTS ---
 apiRouter.get('/clients', (req, res) => res.json(clients));
-apiRouter.post('/clients', (req, res) => {
+apiRouter.post('/clients', validateClientPayload, (req, res) => {
   const newClient = { ...req.body, id: `client-${Date.now()}` };
   clients.unshift(newClient);
   res.status(201).json(newClient);
 });
 
 apiRouter.get('/pets', (req, res) => res.json(pets));
-apiRouter.post('/pets', (req, res) => {
+apiRouter.post('/pets', validatePetPayload, (req, res) => {
   const newPet = { ...req.body, id: `pet-${Date.now()}`, petution_uuid: req.body.petution_uuid || `uuid-${Date.now()}` };
   pets.unshift(newPet);
   res.status(201).json(newPet);
 });
 
 apiRouter.get('/visits', (req, res) => res.json(visits));
-apiRouter.post('/visits', (req, res) => {
+apiRouter.post('/visits', validateVisitPayload, (req, res) => {
   const newVisit = { ...req.body, id: `visit-${Date.now()}` };
   visits.unshift(newVisit);
   res.status(201).json(newVisit);
 });
 
 apiRouter.get('/products', (req, res) => res.json(products));
-apiRouter.post('/products', (req, res) => {
+apiRouter.post('/products', validateProductPayload, (req, res) => {
   const newProd = { ...req.body, id: `prod-${Date.now()}` };
   products.unshift(newProd);
   res.status(201).json(newProd);
 });
 
 apiRouter.get('/invoices', (req, res) => res.json(invoices));
-apiRouter.post('/invoices', (req, res) => {
+apiRouter.post('/invoices', validateInvoicePayload, (req, res) => {
   const newInv = { ...req.body, id: `inv-${Date.now()}` };
   invoices.unshift(newInv);
   res.status(201).json(newInv);
 });
 
 apiRouter.get('/expenses', (req, res) => res.json(expenses));
-apiRouter.post('/expenses', (req, res) => {
+apiRouter.post('/expenses', validateExpensePayload, (req, res) => {
   const newExp = { ...req.body, id: `exp-${Date.now()}` };
   expenses.unshift(newExp);
   res.status(201).json(newExp);

@@ -24,7 +24,8 @@ Petution-Workspace/
 
 ---
 
-## 2. Security, Row-Level Isolation & Telemetry
+## 2. Security, Validation, Row-Level Isolation & Telemetry
+- **Server-Side Validation**: Integrated in `server/middleware/validator.js` (`express-validator`). Validates required fields, non-negative numerical values, email normalization, species constraints, and payload structures across all POST/PUT routes (`/auth`, `/clients`, `/pets`, `/visits`, `/soap_notes`, `/products`, `/invoices`, `/expenses`). Returns structured HTTP 400 JSON errors.
 - **Row-Level Security (RLS)**: Enforced natively in PostgreSQL (`server/db/schema.sql`) and Express middleware (`server/middleware/rlsMiddleware.js`).
   - All 11 multi-tenant tables (`clients`, `pets`, `visits`, `soap_notes`, `products`, `invoices`, `expenses`, `vaccines`, `users`, `stock_logs`, `shopify_sync_logs`) have RLS policies: `FOR ALL USING (workspace_id = current_setting('app.current_workspace_id', true)::uuid)`.
   - Express `enforceWorkspaceIsolation` middleware extracts `x-workspace-id` header to guarantee 100% data boundary isolation between clinic clients.
