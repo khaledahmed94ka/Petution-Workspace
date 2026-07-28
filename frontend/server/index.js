@@ -45,12 +45,11 @@ const distPath = path.join(__dirname, '../dist');
 app.use(express.static(distPath));
 
 // Fallback to index.html for SPA routing
-app.use((req, res, next) => {
-  if (req.method === 'GET' && req.accepts('html')) {
-    res.sendFile(path.join(distPath, 'index.html'));
-  } else {
-    next();
-  }
+app.get(/(.*)/, (req, res, next) => {
+  // Don't fallback for API routes (just in case they fall through)
+  if (req.path.startsWith('/api/')) return next();
+  
+  res.sendFile(path.join(distPath, 'index.html'));
 });
 
 // Setup Sentry Express Error Handler
