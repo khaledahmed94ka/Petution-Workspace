@@ -34,7 +34,7 @@ Petution-Workspace/
   - **Auth Limiter**: Strict 5 attempts per 15 minutes window per IP on login/signup.
   - **Webhook Limiter**: 200 requests per 5 minutes for high-burst Shopify webhooks.
 - **Sentry Error Tracking**: Integrated in `src/services/sentry.jsx` (`@sentry/react`). Captures unhandled React crashes, uncaught exceptions, and telemetry logs. Wrapped around the application in `<PetutionErrorBoundary>`.
-- **Google Identity Services SDK**: Loaded via `https://accounts.google.com/gsi/client`. Parses Google JWT ID Tokens (`credential` payload containing `email`, `name`, `picture`, `sub`).
+- **Google OAuth 2.0 & Google Identity Services**: Integrated in `src/services/googleOAuth.js` with client ID `93098811360-p7r3o0kiinse2djjme71imjlp5dhmgk0.apps.googleusercontent.com`. Triggers official Google OAuth consent flow directly on `accounts.google.com`.
 - **Firebase Auth Web SDK Engine**: Configured in `src/services/firebaseAuth.js` supporting `realGoogleSignInWithPopup`, `realEmailSignIn`, `realEmailSignUp`, `realSendPasswordReset`, and `realSignOut`.
 - **Social Auth Dialog**: `SocialAuthModal` component provides an account chooser modal matching `accounts.google.com` and `appleid.apple.com`.
 - **Password Reset**: `ForgotPasswordModal` component handles email reset link dispatch.

@@ -5,7 +5,7 @@
 
 // Default Google OAuth Client ID (Configurable via import.meta.env.VITE_GOOGLE_CLIENT_ID)
 export const GOOGLE_CLIENT_ID = import.meta.env?.VITE_GOOGLE_CLIENT_ID || 
-  "99812034912-petution.apps.googleusercontent.com";
+  "93098811360-p7r3o0kiinse2djjme71imjlp5dhmgk0.apps.googleusercontent.com";
 
 /**
  * Load Google Identity Services SDK (https://accounts.google.com/gsi/client)
@@ -115,27 +115,7 @@ export const triggerRealGoogleSignIn = async () => {
  * Opens genuine Google OAuth 2.0 popup window pointing directly to accounts.google.com
  */
 const openGoogleOAuthPopupWindow = (resolve, reject) => {
-  const clientId = import.meta.env?.VITE_GOOGLE_CLIENT_ID || window.PETUTION_GOOGLE_CLIENT_ID;
-
-  if (!clientId || clientId.startsWith('99812034912')) {
-    // If no custom Google Client ID is configured yet, prompt or sign in verified account
-    const userEmail = prompt('Enter your Google Account email to authenticate:', 'khaledahmed94.ka@gmail.com');
-    if (userEmail) {
-      return resolve({
-        success: true,
-        user: {
-          id: `usr-g-${Date.now()}`,
-          name: userEmail.split('@')[0].replace(/[\._]/g, ' '),
-          email: userEmail,
-          role: 'Owner',
-          provider: 'google',
-          isAuthenticated: true
-        }
-      });
-    } else {
-      return reject(new Error('Google Sign-In cancelled by user.'));
-    }
-  }
+  const clientId = import.meta.env?.VITE_GOOGLE_CLIENT_ID || window.PETUTION_GOOGLE_CLIENT_ID || GOOGLE_CLIENT_ID;
 
   const redirectUri = window.location.origin;
   const googleOAuthUrl = `https://accounts.google.com/o/oauth2/v2/auth?` +
