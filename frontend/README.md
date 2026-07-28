@@ -88,13 +88,13 @@
 
 | Technology | Purpose |
 |-----------|---------|
-| **React 18** | UI framework with hooks & context |
-| **Vite 5** | Build tool & dev server |
-| **Lucide React** | Icon library |
+| **React 18 & Vite 5** | UI framework with hooks, context & fast dev server |
+| **React Router v7** | True URL-based client-side routing |
+| **Firebase Auth** | Secure authentication (Google OAuth, Apple, Email) |
+| **Express.js** | Centralized backend server for APIs and SPA fallback |
+| **Sentry** | Full-stack error tracking and performance profiling |
 | **Vanilla CSS** | Mobile-first responsive styling |
-| **localStorage** | Client-side data persistence |
-| **GitHub Pages** | Deployment via `gh-pages` |
-| **Render.com** | Production deployment via `render.yaml` |
+| **Render.com** | Production deployment (Static Site & Web Service) |
 
 ---
 
@@ -189,9 +189,12 @@ npm run build
 #### Option A: Render.com (Recommended for Production)
 
 1. Go to [dashboard.render.com](https://dashboard.render.com/)
-2. Click **New +** → **Blueprints**
-3. Select your repository `khaledahmed94ka/Petution-App`
-4. Render will automatically load `render.yaml` and launch your site!
+2. Create a new **Static Site** from your GitHub repository `khaledahmed94ka/Petution-Workspace`.
+3. Set the build command to `npm run build` and publish directory to `frontend/dist`.
+4. **Critical step for React Router SPA**: After deploying, go to the **Redirects/Rewrites** tab in the Render Dashboard and add a rule:
+   * **Source**: `/*`
+   * **Destination**: `/index.html`
+   * **Action**: `Rewrite`
 
 #### Option B: GitHub Pages
 
@@ -251,9 +254,11 @@ Export all clinic data (clients, pets, visits, products, invoices, expenses, vac
 - [ ] WhatsApp API integration for Chats module
 - [ ] Online booking system
 - [ ] Reminder system (SMS/Email for vaccine boosters)
-- [ ] Database backend (Firebase / Supabase)
+- [x] ~~Database backend (Firebase / Supabase)~~ → Migrated to Express & Firebase Auth
 - [x] ~~Prescription templates~~ → Implemented as SOAP Notes & Rx Prescriptions
 - [x] ~~Multi-user authentication~~ → Implemented (Email, Google, Apple, Demo)
+- [x] ~~True URL Routing~~ → Implemented with `react-router-dom`
+- [x] ~~Error Tracking~~ → Implemented with Sentry
 
 ---
 
