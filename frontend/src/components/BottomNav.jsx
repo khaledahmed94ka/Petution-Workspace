@@ -1,7 +1,12 @@
 import React from 'react';
 import { LayoutDashboard, Users, Dog, Calendar, Menu } from 'lucide-react';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { useApp } from '../context/AppContext';
 
-export const BottomNav = ({ activeTab, setActiveTab, onMenuToggle }) => {
+export const BottomNav = ({ onMenuToggle }) => {
+  const navigate = useNavigate();
+  const location = useLocation();
+  const { settings } = useApp();
   const tabs = [
     { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
     { id: 'clients', label: 'Clients', icon: Users },
@@ -14,7 +19,7 @@ export const BottomNav = ({ activeTab, setActiveTab, onMenuToggle }) => {
     <nav className="bottom-nav">
       {tabs.map(tab => {
         const Icon = tab.icon;
-        const isActive = activeTab === tab.id;
+        const isActive = location.pathname.includes(`/${tab.id}`);
 
         return (
           <button
@@ -24,7 +29,7 @@ export const BottomNav = ({ activeTab, setActiveTab, onMenuToggle }) => {
               if (tab.isMenu) {
                 onMenuToggle();
               } else {
-                setActiveTab(tab.id);
+                navigate(`/${settings.slug || 'petution'}/${tab.id}`);
               }
             }}
           >

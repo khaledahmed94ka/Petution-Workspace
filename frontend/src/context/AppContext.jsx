@@ -376,14 +376,6 @@ export const AppProvider = ({ children }) => {
   });
 
   // Modal & View States
-  const [activeTab, setActiveTab] = useState(() => {
-    try {
-      const url = new URL(window.location.href);
-      return url.searchParams.get('tab') || 'reminders';
-    } catch {
-      return 'reminders';
-    }
-  });
   const [isEmbedded, setIsEmbedded] = useState(() => {
     try {
       const url = new URL(window.location.href);
@@ -1017,8 +1009,6 @@ export const AppProvider = ({ children }) => {
         setSettings: updateSettings,
         notifications,
         setNotifications,
-        activeTab,
-        setActiveTab,
         activeDrawer,
         setActiveDrawer,
         activeModalItem,

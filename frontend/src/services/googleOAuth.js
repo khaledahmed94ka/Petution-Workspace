@@ -77,45 +77,27 @@ export const triggerRealGoogleSignIn = async () => {
             }
 
             // If token response contains error or propagation is pending
-            if (tokenResponse?.error === 'invalid_client') {
-              console.warn('[Google OAuth] Client ID propagation pending on Google servers');
+            if (tokenResponse?.error) {
+              console.error('[Google OAuth] Token Error:', tokenResponse.error);
+              return reject(new Error(tokenResponse.error));
             }
             
-            // Seamless authenticated fallback
-            return resolve({
-              success: true,
-              user: {
-                id: `usr-g-${Date.now()}`,
-                name: 'Dr. Khaled ElGendy',
-                email: 'khaledahmed94.ka@gmail.com',
-                role: 'Owner',
-                provider: 'google',
-                isAuthenticated: true
-              }
-            });
+            return reject(new Error('Failed to retrieve user profile from Google.'));
           },
           error_callback: (err) => {
-            console.warn('[Google OAuth] Token client error:', err);
-            resolve({
-              success: true,
-              user: {
-                id: `usr-g-${Date.now()}`,
-                name: 'Dr. Khaled ElGendy',
-                email: 'khaledahmed94.ka@gmail.com',
-                role: 'Owner',
-                provider: 'google',
-                isAuthenticated: true
-              }
-            });
+            console.error('[Google OAuth] Token client error:', err);
+            // It's possible for Google to emit errors like invalid_client. We must reject the promise.
+            reject(new Error(err?.type || 'Google Sign-In failed'));
           }
         });
-
-        // Request Access Token via Official Google Popup
+        
+        // This will launch the official GIS web popup flow
         client.requestAccessToken();
-        return;
       } catch (err) {
-        console.warn('[Google OAuth] Error initializing GIS token client:', err);
+        console.error('[Google OAuth] Exception in initTokenClient:', err);
+        reject(err);
       }
+      return;
     }
 
     // Direct OAuth Popup Fallback
@@ -147,34 +129,16 @@ const openGoogleOAuthPopupWindow = (resolve, reject) => {
   );
 
   if (!popup) {
-    return resolve({
-      success: true,
-      user: {
-        id: `usr-g-${Date.now()}`,
-        name: 'Dr. Khaled ElGendy',
-        email: 'khaledahmed94.ka@gmail.com',
-        role: 'Owner',
-        provider: 'google',
-        isAuthenticated: true
-      }
-    });
+    return reject(new Error('Popup blocked by browser. Please allow popups for this site.'));
   }
 
   const timer = setInterval(() => {
     try {
       if (popup.closed) {
         clearInterval(timer);
-        resolve({
-          success: true,
-          user: {
-            id: `usr-g-${Date.now()}`,
-            name: 'Dr. Khaled ElGendy',
-            email: 'khaledahmed94.ka@gmail.com',
-            role: 'Owner',
-            provider: 'google',
-            isAuthenticated: true
-          }
-        });
+        // Normally, the popup would redirect back to our redirectUri and we'd capture the token.
+        // If it was closed without us capturing the token, the user cancelled or it failed.
+        reject(new Error('Google Sign-In popup was closed before completing the process.'));
       }
     } catch {
       // expected cross-origin check

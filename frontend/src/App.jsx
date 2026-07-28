@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { BrowserRouter, Routes, Route, Navigate, useLocation, Outlet, useNavigate } from 'react-router-dom';
 import { AppProvider, useApp } from './context/AppContext';
 import { Sidebar } from './components/Sidebar';
 import { Header } from './components/Header';
@@ -15,7 +16,7 @@ import { ProductsView } from './views/ProductsView';
 import { AnalyticsView } from './views/AnalyticsView';
 import { RemindersView } from './views/RemindersView';
 import { TeamView } from './views/TeamView';
-import { BillingView } from './views/BillingView'; // Deferred for later
+import { BillingView } from './views/BillingView';
 import { SettingsView } from './views/SettingsView';
 import { RegisterClinicView } from './views/RegisterClinicView';
 
@@ -32,10 +33,11 @@ import { AddVaccineDrawer } from './components/drawers/AddVaccineDrawer';
 import { SOAPNoteDrawer } from './components/drawers/SOAPNoteDrawer';
 import { X, LogOut, ShieldCheck } from 'lucide-react';
 
-const MainApp = () => {
+const MainLayout = () => {
   const [isRegistering, setIsRegistering] = useState(false);
   const [isMobileOpen, setIsMobileOpen] = useState(false);
-  const { user, logout, activeTab, setActiveTab, activeDrawer, setActiveDrawer, activeModalItem, isEmbedded } = useApp();
+  const { user, logout, activeDrawer, setActiveDrawer, activeModalItem, isEmbedded, settings } = useApp();
+  const location = useLocation();
 
   if (!user?.isAuthenticated) {
     return <LoginView />;
@@ -45,32 +47,15 @@ const MainApp = () => {
     return <RegisterClinicView onComplete={() => setIsRegistering(false)} />;
   }
 
-  const renderView = () => {
-    switch (activeTab) {
-      case 'dashboard': return <DashboardView />;
-      case 'clients': return <ClientsView />;
-      case 'pets': return <PetsView />;
-      case 'visits': return <VisitsView />;
-      case 'invoices': return <InvoicesView />;
-      case 'expenses': return <ExpensesView />;
-      case 'products': return <ProductsView />;
-      case 'analytics': return <AnalyticsView />;
-      case 'reminders': return <RemindersView />;
-      case 'chats': return <div className="page-wrapper"><div className="card"><h3>WhatsApp Messaging Hub</h3><p className="text-muted margin-top-xs">Integrated clinic chat system ready for WhatsApp API configuration.</p></div></div>;
-      case 'team': return <TeamView />;
-      case 'billing': return <div className="page-wrapper"><div className="card"><h3>Billing & Subscription</h3><p className="text-muted margin-top-xs">Subscription and billing management coming soon.</p></div></div>;
-      case 'settings': return <SettingsView />;
-      case 'help': return <div className="page-wrapper"><div className="card"><h3>Support & Help Center</h3><p className="text-muted margin-top-xs">Search documentation or contact Petution technical support team.</p></div></div>;
-      default: return <DashboardView />;
-    }
-  };
+  // If at root and authenticated, redirect to workspace dashboard
+  if (location.pathname === '/') {
+    return <Navigate to={`/${settings.slug || 'petution'}/dashboard`} replace />;
+  }
 
   return (
     <div className={`app-container ${isEmbedded ? 'embedded-mode' : ''}`}>
       {!isEmbedded && (
         <Sidebar 
-          activeTab={activeTab} 
-          setActiveTab={setActiveTab} 
           onRegisterClick={() => setIsRegistering(true)}
           isMobileOpen={isMobileOpen}
           onCloseMobile={() => setIsMobileOpen(false)}
@@ -79,15 +64,11 @@ const MainApp = () => {
       <div className="main-content" style={isEmbedded ? { marginLeft: 0, width: '100%' } : {}}>
         <Header onMenuToggle={() => setIsMobileOpen(prev => !prev)} />
         <div className="page-wrapper">
-          {renderView()}
+          <Outlet />
         </div>
       </div>
 
-      <BottomNav 
-        activeTab={activeTab} 
-        setActiveTab={setActiveTab} 
-        onMenuToggle={() => setIsMobileOpen(prev => !prev)} 
-      />
+      <BottomNav onMenuToggle={() => setIsMobileOpen(prev => !prev)} />
 
       {/* Render Active Slide-Over Drawers */}
       {activeDrawer === 'addClient' && <AddClientDrawer />}
@@ -168,11 +149,35 @@ const MainApp = () => {
   );
 };
 
-
 export default function App() {
   return (
-    <AppProvider>
-      <MainApp />
-    </AppProvider>
+    <BrowserRouter>
+      <AppProvider>
+        <Routes>
+          <Route path="/" element={<MainLayout />}>
+            <Route path=":workspaceSlug">
+              <Route path="dashboard" element={<DashboardView />} />
+              <Route path="clients" element={<ClientsView />} />
+              <Route path="pets" element={<PetsView />} />
+              <Route path="visits" element={<VisitsView />} />
+              <Route path="invoices" element={<InvoicesView />} />
+              <Route path="expenses" element={<ExpensesView />} />
+              <Route path="products" element={<ProductsView />} />
+              <Route path="analytics" element={<AnalyticsView />} />
+              <Route path="reminders" element={<RemindersView />} />
+              <Route path="chats" element={<div className="page-wrapper"><div className="card"><h3>WhatsApp Messaging Hub</h3><p className="text-muted margin-top-xs">Integrated clinic chat system ready for WhatsApp API configuration.</p></div></div>} />
+              <Route path="team" element={<TeamView />} />
+              <Route path="billing" element={<div className="page-wrapper"><div className="card"><h3>Billing & Subscription</h3><p className="text-muted margin-top-xs">Subscription and billing management coming soon.</p></div></div>} />
+              <Route path="settings" element={<SettingsView />} />
+              <Route path="help" element={<div className="page-wrapper"><div className="card"><h3>Support & Help Center</h3><p className="text-muted margin-top-xs">Search documentation or contact Petution technical support team.</p></div></div>} />
+              {/* Fallback inside workspace */}
+              <Route path="*" element={<Navigate to="dashboard" replace />} />
+            </Route>
+            {/* Fallback outside workspace */}
+            <Route path="*" element={<Navigate to="/" replace />} />
+          </Route>
+        </Routes>
+      </AppProvider>
+    </BrowserRouter>
   );
 }

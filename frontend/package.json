@@ -11,14 +11,21 @@
     "deploy": "gh-pages -d dist"
   },
   "dependencies": {
+    "@sentry/node": "^10.68.0",
+    "@sentry/profiling-node": "^10.68.0",
     "@sentry/react": "^10.68.0",
     "@vitejs/plugin-react": "^4.2.1",
+    "cors": "^2.8.6",
+    "dotenv": "^17.4.2",
+    "express": "^5.2.1",
     "express-rate-limit": "^8.6.1",
     "express-validator": "^7.3.2",
     "firebase": "^12.16.0",
     "lucide-react": "^0.344.0",
+    "pg": "^8.22.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
+    "react-router-dom": "^7.18.1",
     "vite": "^5.1.6"
   },
   "devDependencies": {

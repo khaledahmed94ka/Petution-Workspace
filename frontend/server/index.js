@@ -7,6 +7,19 @@ import express from 'express';
 import cors from 'cors';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import * as Sentry from '@sentry/node';
+import { nodeProfilingIntegration } from '@sentry/profiling-node';
+
+// Initialize Sentry before anything else
+Sentry.init({
+  dsn: "https://6bd09a5c381a1db4916f91368b63ad44@o4511809914404864.ingest.de.sentry.io/4511809919123536",
+  integrations: [
+    nodeProfilingIntegration(),
+  ],
+  tracesSampleRate: 1.0,
+  profilesSampleRate: 1.0,
+});
+
 import { apiRouter } from './routes/api.js';
 import { shopifyRouter } from './routes/shopify.js';
 
@@ -32,9 +45,16 @@ const distPath = path.join(__dirname, '../dist');
 app.use(express.static(distPath));
 
 // Fallback to index.html for SPA routing
-app.get('*', (req, res) => {
-  res.sendFile(path.join(distPath, 'index.html'));
+app.use((req, res, next) => {
+  if (req.method === 'GET' && req.accepts('html')) {
+    res.sendFile(path.join(distPath, 'index.html'));
+  } else {
+    next();
+  }
 });
+
+// Setup Sentry Express Error Handler
+Sentry.setupExpressErrorHandler(app);
 
 // Start Server
 app.listen(PORT, () => {

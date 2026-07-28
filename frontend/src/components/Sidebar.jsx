@@ -19,8 +19,9 @@ import {
   Trash2
 } from 'lucide-react';
 import { useApp } from '../context/AppContext';
+import { useNavigate, useLocation } from 'react-router-dom';
 
-export const Sidebar = ({ activeTab, setActiveTab, onRegisterClick, isMobileOpen, onCloseMobile }) => {
+export const Sidebar = ({ onRegisterClick, isMobileOpen, onCloseMobile }) => {
   const { 
     user,
     settings, 
@@ -32,9 +33,12 @@ export const Sidebar = ({ activeTab, setActiveTab, onRegisterClick, isMobileOpen
     setShowWorkspaceMenu,
     setActiveDrawer
   } = useApp();
+  
+  const navigate = useNavigate();
+  const location = useLocation();
 
   const handleNavClick = (id) => {
-    setActiveTab(id);
+    navigate(`/${settings.slug || 'petution'}/${id}`);
     if (onCloseMobile) onCloseMobile();
   };
 
@@ -132,7 +136,7 @@ export const Sidebar = ({ activeTab, setActiveTab, onRegisterClick, isMobileOpen
       <nav className="nav-group">
         {mainNav.map(item => {
           const Icon = item.icon;
-          const isActive = activeTab === item.id;
+          const isActive = location.pathname.includes(`/${item.id}`);
           return (
             <button
               key={item.id}
@@ -153,7 +157,7 @@ export const Sidebar = ({ activeTab, setActiveTab, onRegisterClick, isMobileOpen
       <nav className="nav-group">
         {secondaryNav.map(item => {
           const Icon = item.icon;
-          const isActive = activeTab === item.id;
+          const isActive = location.pathname.includes(`/${item.id}`);
           return (
             <button
               key={item.id}

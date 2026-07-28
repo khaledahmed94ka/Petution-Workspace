@@ -8,9 +8,11 @@ import {
   GripVertical
 } from 'lucide-react';
 import { useApp } from '../context/AppContext';
+import { useNavigate } from 'react-router-dom';
 
 export const DashboardView = () => {
-  const { clients, pets, visits, invoices, products, expenses = [], settings, team, setActiveDrawer, setActiveTab } = useApp();
+  const { clients, pets, visits, invoices, products, expenses = [], settings, team, setActiveDrawer } = useApp();
+  const navigate = useNavigate();
   const [showOnboarding, setShowOnboarding] = React.useState(true);
 
   const totalRevenue = invoices
@@ -79,7 +81,7 @@ export const DashboardView = () => {
       desc: 'Configure clinic schedule, address, contact details, and organization info.',
       completed: Boolean(settings.phone && settings.address),
       btnText: 'Clinic Settings',
-      action: () => setActiveTab('settings')
+      action: () => navigate(`/${settings.slug || 'petution'}/settings`)
     },
     {
       id: 'task-team',
@@ -178,7 +180,7 @@ export const DashboardView = () => {
           <h1 className="banner-amount">{totalRevenue} EGP</h1>
           <span className="banner-change">+0% vs yesterday</span>
         </div>
-        <button className="view-all-btn" onClick={() => setActiveTab('visits')}>
+        <button className="view-all-btn" onClick={() => navigate(`/${settings.slug || 'petution'}/visits`)}>
           View All Visits <ArrowRight size={16} />
         </button>
       </div>
@@ -226,28 +228,28 @@ export const DashboardView = () => {
       </div>
 
       <div className="alert-cards-grid">
-        <div className="alert-card grad-amber" onClick={() => setActiveTab('clients')}>
+        <div className="alert-card grad-amber" onClick={() => navigate(`/${settings.slug || 'petution'}/clients`)}>
           <div className="alert-content">
             <span className="alert-val">0</span>
             <span className="alert-lbl">Need action</span>
           </div>
           <ArrowRight size={18} className="alert-arrow" />
         </div>
-        <div className="alert-card grad-rose" onClick={() => setActiveTab('products')}>
+        <div className="alert-card grad-rose" onClick={() => navigate(`/${settings.slug || 'petution'}/products`)}>
           <div className="alert-content">
             <span className="alert-val">0</span>
             <span className="alert-lbl">Low stock products</span>
           </div>
           <ArrowRight size={18} className="alert-arrow" />
         </div>
-        <div className="alert-card grad-teal" onClick={() => setActiveTab('visits')}>
+        <div className="alert-card grad-teal" onClick={() => navigate(`/${settings.slug || 'petution'}/visits`)}>
           <div className="alert-content">
             <span className="alert-val">0</span>
             <span className="alert-lbl">Upcoming Follow-ups</span>
           </div>
           <ArrowRight size={18} className="alert-arrow" />
         </div>
-        <div className="alert-card grad-rose" onClick={() => setActiveTab('invoices')}>
+        <div className="alert-card grad-rose" onClick={() => navigate(`/${settings.slug || 'petution'}/invoices`)}>
           <div className="alert-content">
             <span className="alert-val">{invoices.filter(i => i.status === 'pending').length}</span>
             <span className="alert-lbl">Invoices</span>
