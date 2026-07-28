@@ -13,17 +13,8 @@ export const LoginView = () => {
   const [showForgotModal, setShowForgotModal] = useState(false);
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
 
-  const handleGoogleSignIn = async () => {
-    try {
-      setIsGoogleLoading(true);
-      await loginWithProvider('google');
-    } catch (err) {
-      console.error('Google Sign-In failed:', err);
-      // The user might close the popup, so we don't necessarily need to alert them every time,
-      // but if we want to: alert('Google Sign-In failed or was cancelled.');
-    } finally {
-      setIsGoogleLoading(false);
-    }
+  const handleGoogleSignIn = () => {
+    setSocialProvider('google');
   };
 
   // Form states

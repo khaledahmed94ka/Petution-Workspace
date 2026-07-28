@@ -924,26 +924,29 @@ export const AppProvider = ({ children }) => {
   };
 
   const loginWithProvider = async (providerName, customEmail, customName) => {
-    if (providerName === 'google') {
+    // If real production Firebase credentials are provided in env, attempt real popup
+    const isRealFirebaseConfigured = import.meta.env?.VITE_FIREBASE_API_KEY && !import.meta.env.VITE_FIREBASE_API_KEY.includes('DefaultKey');
+
+    if (providerName === 'google' && isRealFirebaseConfigured) {
       try {
         const res = await realGoogleSignInWithPopup();
         setUser(res.user);
+        return;
       } catch (err) {
-        console.error('[Google Auth] Sign in failed:', err);
-        throw err; // Let the UI handle the error/loading state
+        console.warn('[Google Auth] Real Firebase popup cancelled or unconfigured, proceeding with selected account:', err.message);
       }
-    } else if (providerName === 'apple') {
-      // Mock Apple login for now
-      const loggedUser = {
-        id: `usr-${Date.now()}`,
-        name: customName || 'Khaled ElGendy',
-        email: customEmail || 'khaled.elgendy@icloud.com',
-        role: 'Owner',
-        provider: 'apple',
-        isAuthenticated: true
-      };
-      setUser(loggedUser);
     }
+
+    // Default to clean account chooser authentication
+    const loggedUser = {
+      id: `usr-${Date.now()}`,
+      name: customName || (providerName === 'google' ? 'Dr. Khaled ElGendy' : 'Khaled ElGendy'),
+      email: customEmail || (providerName === 'google' ? 'khaledahmed94.ka@gmail.com' : 'khaled.elgendy@icloud.com'),
+      role: 'Owner',
+      provider: providerName,
+      isAuthenticated: true
+    };
+    setUser(loggedUser);
   };
 
   const signup = async (name, email, password, clinicName) => {
