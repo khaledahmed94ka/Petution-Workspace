@@ -13,8 +13,15 @@ export const LoginView = () => {
   const [showForgotModal, setShowForgotModal] = useState(false);
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
 
-  const handleGoogleSignIn = () => {
-    setSocialProvider('google');
+  const handleGoogleSignIn = async () => {
+    try {
+      setIsGoogleLoading(true);
+      await loginWithProvider('google');
+    } catch (err) {
+      console.warn('[Google Auth] Sign-in cancelled or closed:', err);
+    } finally {
+      setIsGoogleLoading(false);
+    }
   };
 
   // Form states

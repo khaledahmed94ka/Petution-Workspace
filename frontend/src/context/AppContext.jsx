@@ -3,6 +3,7 @@ import { apiClient } from '../services/apiClient';
 import { realGoogleSignInWithPopup, realEmailSignIn, realEmailSignUp, realSendPasswordReset, realSignOut } from '../services/firebaseAuth';
 import { syncToFirestore, deleteFromFirestore, fetchUserData, bulkWriteToFirestore } from '../services/firestoreDb';
 import { captureException } from '../services/sentry.jsx';
+import { triggerRealGoogleSignIn } from '../services/googleOAuth.js';
 
 const syncToShopify = async (type, action, data) => {
   try {
@@ -924,20 +925,16 @@ export const AppProvider = ({ children }) => {
   };
 
   const loginWithProvider = async (providerName, customEmail, customName) => {
-    // If real production Firebase credentials are provided in env, attempt real popup
-    const isRealFirebaseConfigured = import.meta.env?.VITE_FIREBASE_API_KEY && !import.meta.env.VITE_FIREBASE_API_KEY.includes('DefaultKey');
-
-    if (providerName === 'google' && isRealFirebaseConfigured) {
+    if (providerName === 'google' && !customEmail) {
       try {
-        const res = await realGoogleSignInWithPopup();
+        const res = await triggerRealGoogleSignIn();
         setUser(res.user);
         return;
       } catch (err) {
-        console.warn('[Google Auth] Real Firebase popup cancelled or unconfigured, proceeding with selected account:', err.message);
+        console.warn('[Google Auth] Google OAuth popup closed or fallback:', err.message);
       }
     }
 
-    // Default to clean account chooser authentication
     const loggedUser = {
       id: `usr-${Date.now()}`,
       name: customName || (providerName === 'google' ? 'Dr. Khaled ElGendy' : 'Khaled ElGendy'),
